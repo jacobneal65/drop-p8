@@ -4,23 +4,36 @@ __lua__
 --drop
 --by olivander65
 
-b_spr=1--basket
-p_spr=2--player
-p_x=64
-p_y=100
-fruits={}
-f_start=16
-f_cnt=5
-f_itrvl=16
-f_ybnd=128
-
-grav=1
-level=1
-pt=0
-
+--todo:
+--add stars background
+--particles
+--gravity for player
 
 function _init()
- for i=1,level do
+	--player
+	p_x=64
+	p_y=100
+	p_dx=0
+	p_dy=0
+	max_dx=2
+	max_dy=2
+	acc=0.5
+	
+	fruits={}
+	f_start=16
+	f_cnt=5
+	f_itrvl=16
+	f_ybnd=128
+	
+	grav=1
+	frict=0.90
+	level=1
+	pt=0
+ load_fruit()
+end
+
+function load_fruit()
+	for i=1,level do
  	local fx=flr(rnd(110)+5)
  	fruit={
  		sprite=flr(rnd(f_cnt)+f_start),
@@ -34,10 +47,21 @@ function _init()
 end
 
 function _update()
-	if (btn(0)) p_x-=2
-	if (btn(1)) p_x+=2
-	if (btn(2)) p_y-=2
-	if (btn(3)) p_y+=2
+	--plyr friction
+	p_dx*=frict
+	p_dy*=frict
+	
+	
+	--plyr movment
+	if (btn(0)) p_dx-=acc
+	if (btn(1)) p_dx+=acc
+	if (btn(2)) p_dy-=acc
+	if (btn(3)) p_dy+=acc
+
+	p_dx=(mid(-max_dx,p_dx,max_dx))
+	p_dy=(mid(-max_dy,p_dy,max_dy))
+	p_x+=p_dx
+	p_y+=p_dy
 
 	--bounds
 	if (p_x > 120) p_x=120
@@ -69,16 +93,16 @@ function _update()
 	--got all fruit
 	if #fruits==0 then
 		level+=1
-		_init()
+		load_fruit()
 	end
 	
 end
 
 function _draw()
 	cls()
-	rectfill(0,108,127,127,3)
-	spr(p_spr,p_x,p_y)--plyr
-	spr(b_spr,p_x,p_y-8)
+	--rectfill(0,108,127,127,3)
+	spr(2,p_x,p_y)--plyr
+	spr(1,p_x,p_y-8)--basket
 	
 	--fruit
 	for fruit in all(fruits) do
@@ -86,8 +110,7 @@ function _draw()
 	end
 	
 	print("score:"..pt)
-	print("level:"..level,32,0)
-	print("fruit:"..#fruits,64,0)
+	print("level:"..level,40,0)
 end
 -->8
 --particles
