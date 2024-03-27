@@ -10,6 +10,10 @@ __lua__
 --gravity for player
 
 function _init()
+
+	effects={}
+	f1c={8,9,10,5}
+	f2c={7,6,6,5}
 	--player
 	p_x=64
 	p_y=100
@@ -17,7 +21,7 @@ function _init()
 	p_dy=0
 	max_dx=2
 	max_dy=2
-	acc=0.5
+	acc=0.2
 	
 	fruits={}
 	f_start=16
@@ -47,17 +51,25 @@ function load_fruit()
 end
 
 function _update()
+	update_fx()
 	--plyr friction
 	p_dx*=frict
 	p_dy*=frict
-	
+
+	p_l=false
+	p_r=false
+	p_u=false
+	p_d=false
+		
 	
 	--plyr movment
-	if (btn(0)) p_dx-=acc
-	if (btn(1)) p_dx+=acc
-	if (btn(2)) p_dy-=acc
-	if (btn(3)) p_dy+=acc
-
+	--left/right
+	if (btn(0)) p_dx-=acc p_l=true
+	if (btn(1)) p_dx+=acc p_r=true
+	--up/down
+	if (btn(2)) p_dy-=acc p_u=true
+	if (btn(3)) p_dy+=acc p_d=true
+	
 	p_dx=(mid(-max_dx,p_dx,max_dx))
 	p_dy=(mid(-max_dy,p_dy,max_dy))
 	p_x+=p_dx
@@ -100,20 +112,116 @@ end
 
 function _draw()
 	cls()
+ draw_fx()
+ local f_px=flr(p_x)
+ local f_py=flr(p_y)
 	--rectfill(0,108,127,127,3)
 	spr(2,p_x,p_y)--plyr
 	spr(1,p_x,p_y-8)--basket
+	if p_l then
+		fire(p_x+6,p_y+2,0.5,0,1,2,f2c)
+	elseif p_r then
+		fire(p_x,p_y+2,-0.5,0,1,2,f2c)				
+	end
 	
+	if p_u then
+		fire(p_x+4,p_y+4,0,0.5,2,5,f1c)
+	elseif p_d then
+		fire(p_x+4,p_y-2,0,0,-0.5,10,f2c)
+	else		
+		
+	end
+	fire(f_px+4,f_py+4,0,0.5,1,10,f1c)
 	--fruit
 	for fruit in all(fruits) do
 		spr(fruit.sprite,fruit.x,fruit.y)
 	end
 	
-	print("score:"..pt)
-	print("level:"..level,40,0)
+	print("score:"..pt,0,0,7)
+	print("level:"..level,40,0,7)
 end
 -->8
 --particles
+function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table)
+    local fx={
+        x=x,
+        y=y,
+        t=0,
+        die=die,
+        dx=dx,
+        dy=dy,
+        grav=grav,
+        grow=grow,
+        shrink=shrink,
+        r=r,
+        c=0,
+        c_table=c_table
+    }
+    add(effects,fx)
+end
+
+function update_fx()
+    for fx in all(effects) do
+        --lifetime
+        fx.t+=1
+        if fx.t>fx.die then del(effects,fx) end
+
+        --color depends on lifetime
+        if fx.t/fx.die < 1/#fx.c_table then
+            fx.c=fx.c_table[1]
+
+        elseif fx.t/fx.die < 2/#fx.c_table then
+            fx.c=fx.c_table[2]
+
+        elseif fx.t/fx.die < 3/#fx.c_table then
+            fx.c=fx.c_table[3]
+
+        else
+            fx.c=fx.c_table[4]
+        end
+
+        --physics
+        if fx.grav then fx.dy+=.5 end
+        if fx.grow then fx.r+=.1 end
+        if fx.shrink then fx.r-=.1 end
+
+        --move
+        fx.x+=fx.dx
+        fx.y+=fx.dy
+    end
+end
+
+function draw_fx()
+    for fx in all(effects) do
+        --draw pixel for size 1, draw circle for larger
+        if fx.r<=1 then
+            pset(fx.x,fx.y,fx.c)
+        else
+            circfill(fx.x,fx.y,fx.r,fx.c)
+        end
+    end
+end
+
+-- fire effect
+--dx/dy should be mults of -+.5
+function fire(x,y,dx,dy,r,l,c_table)
+    for i=0, 1 do
+        --settings
+        add_fx(
+            x+rnd(1)-1/2,  -- x
+            y+rnd(1)-1/2,  -- y
+            l+rnd(l),-- die
+            dx,         -- dx
+            dy,       -- dy
+            false,     -- gravity
+            false,     -- grow
+            true,      -- shrink
+            r,         -- radius
+            c_table    -- color_table
+        )
+    end
+end
+
 
 __gfx__
 0000000000000000065665600000000000000000000000000000000000000000000000000d0000d0000000000000000000000000000000000000000000000000
