@@ -12,6 +12,7 @@ __lua__
 function _init()
 	music(1)
 	effects={}
+	--two flame effects
 	f1c={8,9,10,5}
 	f2c={7,6,6,5}
 	--player
