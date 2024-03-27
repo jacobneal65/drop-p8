@@ -33,7 +33,7 @@ function _init()
 	frict=0.90
 	level=1
 	pt=0
-	
+	t=0
 	--stars
 	starx={}
 	stary={}
@@ -44,6 +44,13 @@ function _init()
 		add(starspd,rnd(1.5)+0.5)		
 	end
 	
+	--spinning score
+	sss=22
+	ssl=9
+	ss_ani={}
+	for i=0,ssl do
+		add(ss_ani,sss+i)
+	end
 	
  load_fruit()
 end
@@ -63,6 +70,7 @@ function load_fruit()
 end
 
 function _update()
+t+=1
 	update_fx()
 	--plyr friction
 	p_dx*=frict
@@ -153,8 +161,9 @@ function _draw()
 		spr(fruit.sprite,fruit.x,fruit.y)
 	end
 	
-	print("score:"..pt,0,0,7)
-	print("level:"..level,40,0,7)
+	spr(get_frame(ss_ani,2),0,0)
+	print(pt,8,2,7)
+	print("level:"..level,40,2,7)
 end
 -->8
 --particles
@@ -270,6 +279,11 @@ function animatestars()
 		stary[i]=sy
 	end
 end
+-->8
+--get frame
+function get_frame(ani,spd)
+ return ani[flr(t/spd)%#ani+1]
+end 
 __gfx__
 00000000000000000d5665d005d65d0000d56d50000000000000000000000000000000000d0000d0000000000000000000000000000000000000000000000000
 0000000070000006065cc560055c56000065c5500000000000000000000000000000000005600650000000000000000000000000000000000000000000000000
