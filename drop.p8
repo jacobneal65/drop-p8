@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
---drop game
+--space trash
 --by olivander65
 
 function _init()
@@ -19,11 +19,11 @@ function _init()
 	max_dy=2
 	acc=0.2
 	vacc=0.3--vertical acc
-	fruits={}
-	f_start=16
-	f_cnt=5
-	f_itrvl=16
-	f_ybnd=128
+	trashs={}
+	t_start=16
+	t_cnt=5
+	t_itrvl=16
+	t_ybnd=128
 	
 	grav=1
 	frict=0.90
@@ -48,21 +48,7 @@ function _init()
 		add(ss_ani,sss+i)
 	end
 	
- load_fruit()
-end
-
-function load_fruit()
-	for i=1,level do
- 	local fx=flr(rnd(110)+5)
- 	fruit={
- 		sprite=flr(rnd(f_cnt)+f_start),
- 		x=fx,
- 		bx=fx,
- 		y=i*(-f_itrvl),
- 		wv=flr(rnd(10))
- 	}
- 	add(fruits,fruit)
- end
+ load_trash()
 end
 
 function _update()
@@ -97,32 +83,8 @@ t+=1
 	if (p_y > 120) p_y=120
 	if (p_y < 0) p_y=1
 	
-	--fruit
-	for fruit in all(fruits) do
-		fruit.y+=grav
-		--+fruit.wv*sin(time())
-		fruit.x=fruit.bx
-		if fruit.y+4>p_y-8
-		and fruit.y+4<p_y
-		and fruit.x+4>p_x
-		and fruit.x+4<p_x+8 then
-			pt+=1
-			del(fruits,fruit)
-			sfx(1)
-		end
-		
-		if fruit.y>f_ybnd then
-			del(fruits,fruit)
-			sfx(0)
-		end
-	end
-	
-	--got all fruit
-	if #fruits==0 then
-		level+=1
-		load_fruit()
-	end
-	
+	update_trash()
+
 	animatestars()
 	
 end
@@ -131,8 +93,8 @@ function _draw()
 	cls()
 	starfield()
  	draw_fx()
- local f_px=flr(p_x)
- local f_py=flr(p_y)
+ local t_px=flr(p_x)
+ local t_py=flr(p_y)
 	--rectfill(0,108,127,127,3)
 	spr(p_spr,p_x,p_y)--plyr
 	spr(1,p_x,p_y-8)--basket
@@ -150,16 +112,131 @@ function _draw()
 	else		
 		
 	end
-	fire(f_px+4,f_py+4,0,0.5,1,10,f1c)
-	--fruit
-	for fruit in all(fruits) do
-		spr(fruit.sprite,fruit.x,fruit.y)
+	fire(t_px+4,t_py+4,0,0.5,1,10,f1c)
+	
+	--trash
+	for trash in all(trashs) do
+		spr(trash.sprite,trash.x,trash.y)
 	end
 	
 	spr(get_frame(ss_ani,2),0,0)
 	print(pt,8,2,7)
 	print("level:"..level,40,2,7)
 end
+-->8
+--trash
+
+--patterns
+--1=wave r
+--2=wave l
+function load_trash()
+	
+	l_patrn={1,2}
+	l_amnt={10,10,10,10,10}
+	l_dir={-1,1}
+
+
+	for i=1,l_amnt[level] do
+		--starting x
+ 	local sx=t_x_start(i)--flr(rnd(110)+5)
+ 	trash={
+ 		sprite=flr(rnd(t_cnt)+t_start),
+ 		x=sx,
+ 		bx=sx,--base x
+ 		y=i*(-t_itrvl),
+ 	}
+ 	add(trashs,trash)
+ end
+end
+
+function update_trash()
+	for trash in all(trashs) do
+		trash.y+=grav
+		trash.x=trash_pattern(trash)
+		--trash captured
+		if trash.y+4>p_y-8
+		and trash.y+4<p_y
+		and trash.x+4>p_x
+		and trash.x+4<p_x+8 then
+			pt+=1
+			del(trashs,trash)
+			sfx(1)
+		end
+		
+		if trash.y>t_ybnd then
+			del(trashs,trash)
+			sfx(0)
+		end
+	end
+	
+	--got all trash
+	if #trashs==0 then
+		level+=1
+		load_trash()
+	end
+end
+
+function t_x_start(i)
+ 
+ if l_patrn[level]==1 then
+ 	return 64
+ end
+ --start in middle area
+ --flr(rnd(48)+40)
+ return 64
+end
+
+function trash_pattern(_t)
+	local _y,_x=_t.y,_t.x
+	if level==1 or level==2 then
+		return zig_pattern(_x,_y)
+	end	
+end
+
+function zig_pattern(_x,_y)
+	if _y >= 0 and _y < 50 then
+		_x+=l_dir[level]
+	elseif _y >=50 then
+		_x-=l_dir[level]
+	end
+	return _x
+end
+-->8
+--starfield
+function starfield()
+	for i=1,#starx do
+		local scol=6
+		
+		if starspd[i] < 1 then
+			scol=1
+		elseif starspd[i] < 1.5 then
+			scol=13
+		end
+		
+		if starspd[i] <= 1.5 then
+			pset(starx[i],stary[i],scol)
+			else
+			line(starx[i],stary[i],starx[i],stary[i]+1,scol)
+		end
+		
+	end
+end
+
+function animatestars()
+	for i=1,#stary do
+		local sy=stary[i]
+		sy+=starspd[i]
+		if sy>128 then
+			sy-=128
+		end
+		stary[i]=sy
+	end
+end
+-->8
+--tools
+function get_frame(ani,spd)
+ return ani[flr(t/spd)%#ani+1]
+end 
 -->8
 --particles
 function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table)
@@ -243,42 +320,6 @@ function fire(x,y,dx,dy,r,l,c_table)
 end
 
 
--->8
---starfield
-function starfield()
-	for i=1,#starx do
-		local scol=6
-		
-		if starspd[i] < 1 then
-			scol=1
-		elseif starspd[i] < 1.5 then
-			scol=13
-		end
-		
-		if starspd[i] <= 1.5 then
-			pset(starx[i],stary[i],scol)
-			else
-			line(starx[i],stary[i],starx[i],stary[i]+1,scol)
-		end
-		
-	end
-end
-
-function animatestars()
-	for i=1,#stary do
-		local sy=stary[i]
-		sy+=starspd[i]
-		if sy>128 then
-			sy-=128
-		end
-		stary[i]=sy
-	end
-end
--->8
---tools
-function get_frame(ani,spd)
- return ani[flr(t/spd)%#ani+1]
-end 
 __gfx__
 00000000000000000d5665d005d65d0000d56d50000000000000000000000000000000000d0000d0000000000000000000000000000000000000000000000000
 0000000070000006065cc560055c56000065c5500000000000000000000000000000000005600650000000000000000000000000000000000000000000000000
