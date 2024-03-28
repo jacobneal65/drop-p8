@@ -27,7 +27,7 @@ function _init()
 	
 	grav=1
 	frict=0.90
-	level=1
+	level=3
 	pt=0
 	t=0
 	--stars
@@ -131,19 +131,25 @@ end
 --2=wave l
 function load_trash()
 	
-	l_patrn={1,2}
 	l_amnt={10,10,10,10,10}
 	l_dir={-1,1}
 
 
 	for i=1,l_amnt[level] do
 		--starting x
+		local _i=i
+		--cross pattern
+		--two start at same point
+		if level==3 and i%2==0 then
+			_i=(i-1)
+		end
  	local sx=t_x_start(i)--flr(rnd(110)+5)
  	trash={
  		sprite=flr(rnd(t_cnt)+t_start),
  		x=sx,
  		bx=sx,--base x
- 		y=i*(-t_itrvl),
+ 		y=_i*(-t_itrvl),
+ 		i=i,
  	}
  	add(trashs,trash)
  end
@@ -163,6 +169,7 @@ function update_trash()
 			sfx(1)
 		end
 		
+		--trash survived
 		if trash.y>t_ybnd then
 			del(trashs,trash)
 			sfx(0)
@@ -177,9 +184,14 @@ function update_trash()
 end
 
 function t_x_start(i)
- 
- if l_patrn[level]==1 then
+ if level<3 then
  	return 64
+ elseif level==3 then
+	 local _x=6
+		if i%2==1 then
+			_x=118
+		end
+ 	return _x
  end
  --start in middle area
  --flr(rnd(48)+40)
@@ -188,16 +200,29 @@ end
 
 function trash_pattern(_t)
 	local _y,_x=_t.y,_t.x
-	if level==1 or level==2 then
-		return zig_pattern(_x,_y)
+	if level<3 then
+		return zig_p(_x,_y)
+	elseif level==3 then
+		return cros_p(_x,_y,_t.i)
 	end	
 end
 
-function zig_pattern(_x,_y)
+function zig_p(_x,_y)
 	if _y >= 0 and _y < 50 then
 		_x+=l_dir[level]
 	elseif _y >=50 then
 		_x-=l_dir[level]
+	end
+	return _x
+end
+
+function cros_p(_x,_y,i)
+	if _y >= 0 then
+		local c_dir=1
+		if i%2==1 then
+			c_dir=-1
+		end
+		_x+=c_dir
 	end
 	return _x
 end
