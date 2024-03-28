@@ -20,14 +20,15 @@ function _init()
 	acc=0.2
 	vacc=0.3--vertical acc
 	trashs={}
-	t_start=16
+	t_spr=16
 	t_cnt=5
 	t_itrvl=16
 	t_ybnd=128
-	
+	t_df_ybnd=128--default y bound
+	t_grav=1
 	grav=1
 	frict=0.90
-	level=3
+	level=1
 	pt=0
 	t=0
 	--stars
@@ -83,7 +84,8 @@ t+=1
 	if (p_y > 120) p_y=120
 	if (p_y < 0) p_y=1
 	
-	update_trash()
+	--trash
+	t_update()
 
 	animatestars()
 	
@@ -125,27 +127,28 @@ function _draw()
 end
 -->8
 --trash
-
---patterns
---1=wave r
---2=wave l
 function load_trash()
-	
-	l_amnt={10,10,10,10,10}
+	t_ybnd=t_df_ybnd
+	t_grav=grav
 	l_dir={-1,1}
-
-
-	for i=1,l_amnt[level] do
+	t_amt=10
+	if level==4 then
+		t_amt=5
+	end
+	for i=1,t_amt do
 		--starting x
 		local _i=i
 		--cross pattern
 		--two start at same point
 		if level==3 and i%2==0 then
 			_i=(i-1)
+		--all start at same point
+		elseif level==4 then
+			_i=1
 		end
- 	local sx=t_x_start(i)--flr(rnd(110)+5)
+ 	local sx=t_start(i)
  	trash={
- 		sprite=flr(rnd(t_cnt)+t_start),
+ 		sprite=flr(rnd(t_cnt)+t_spr),
  		x=sx,
  		bx=sx,--base x
  		y=_i*(-t_itrvl),
@@ -155,10 +158,10 @@ function load_trash()
  end
 end
 
-function update_trash()
+function t_update()
 	for trash in all(trashs) do
-		trash.y+=grav
-		trash.x=trash_pattern(trash)
+		trash.y+=t_grav
+		trash.x=t_pattern(trash)
 		--trash captured
 		if trash.y+4>p_y-8
 		and trash.y+4<p_y
@@ -170,7 +173,9 @@ function update_trash()
 		end
 		
 		--trash survived
-		if trash.y>t_ybnd then
+		if (trash.y>t_ybnd and t_ybnd>0)
+		or (trash.y<=0 and t_ybnd==0)
+		then
 			del(trashs,trash)
 			sfx(0)
 		end
@@ -183,7 +188,7 @@ function update_trash()
 	end
 end
 
-function t_x_start(i)
+function t_start(i)
  if level<3 then
  	return 64
  elseif level==3 then
@@ -192,18 +197,26 @@ function t_x_start(i)
 			_x=118
 		end
  	return _x
+ elseif level==4 then
+ 	return 20*i
  end
  --start in middle area
  --flr(rnd(48)+40)
- return 64
+ return 0
 end
 
-function trash_pattern(_t)
+function t_pattern(_t)
 	local _y,_x=_t.y,_t.x
 	if level<3 then
 		return zig_p(_x,_y)
 	elseif level==3 then
 		return cros_p(_x,_y,_t.i)
+	elseif level==4 then
+		if _y>100 then
+			t_grav=-1
+			t_ybnd=0--make bnd top of scrn
+		end
+		return _x
 	end	
 end
 
