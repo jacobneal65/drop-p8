@@ -28,7 +28,7 @@ function _init()
 	t_grav=1
 	grav=1
 	frict=0.90
-	level=1
+	level=5
 	pt=0
 	t=0
 	--stars
@@ -127,35 +127,46 @@ function _draw()
 end
 -->8
 --trash
+--load trash is called at
+--start and each new level
 function load_trash()
 	t_ybnd=t_df_ybnd
 	t_grav=grav
-	l_dir={-1,1}
-	t_amt=10
-	if level==4 then
-		t_amt=5
+	
+	if level==1 then	
+		fill_trash(64,1,10,0)--zig
+	elseif level==2 then
+		fill_trash(64,-1,10,0)--zig
+	elseif level==3 then
+		fill_trash(0,1,10,1)--cross
+	elseif level==4 then
+		fill_trash(0,1,5,2)--line
+	elseif level==5 then
+		fill_trash(64,1,10,0)--dblzig
+		fill_trash(64,-1,10,0)	
 	end
-	for i=1,t_amt do
-		--starting x
-		local _i=i
-		--cross pattern
-		--two start at same point
-		if level==3 and i%2==0 then
-			_i=(i-1)
-		--all start at same point
-		elseif level==4 then
+end
+
+function fill_trash(_x,_dir,_amt,_ord)
+	for i=1,_amt do
+		local _i,nx=i,_x
+		if _ord==1 and i%2==0 then--cros
+			_i=i-1
+			nx=118
+		elseif _ord==2 then--line
+			nx=20*i
 			_i=1
 		end
- 	local sx=t_start(i)
  	trash={
  		sprite=flr(rnd(t_cnt)+t_spr),
- 		x=sx,
- 		bx=sx,--base x
+ 		x=nx,
+ 		bx=nx,--base x
  		y=_i*(-t_itrvl),
  		i=i,
+ 		dir=_dir,
  	}
  	add(trashs,trash)
- end
+ end	
 end
 
 function t_update()
@@ -180,7 +191,6 @@ function t_update()
 			sfx(0)
 		end
 	end
-	
 	--got all trash
 	if #trashs==0 then
 		level+=1
@@ -188,27 +198,10 @@ function t_update()
 	end
 end
 
-function t_start(i)
- if level<3 then
- 	return 64
- elseif level==3 then
-	 local _x=6
-		if i%2==1 then
-			_x=118
-		end
- 	return _x
- elseif level==4 then
- 	return 20*i
- end
- --start in middle area
- --flr(rnd(48)+40)
- return 0
-end
-
 function t_pattern(_t)
 	local _y,_x=_t.y,_t.x
 	if level<3 then
-		return zig_p(_x,_y)
+		return zig_p(_t)
 	elseif level==3 then
 		return cros_p(_x,_y,_t.i)
 	elseif level==4 then
@@ -220,20 +213,20 @@ function t_pattern(_t)
 	end	
 end
 
-function zig_p(_x,_y)
-	if _y >= 0 and _y < 50 then
-		_x+=l_dir[level]
-	elseif _y >=50 then
-		_x-=l_dir[level]
+function zig_p(_t)
+	if _t.y >= 0 and _t.y < 50 then
+		_t.x+=_t.dir
+	elseif _t.y >=50 then
+		_t.x-=_t.dir
 	end
-	return _x
+	return _t.x
 end
 
 function cros_p(_x,_y,i)
 	if _y >= 0 then
-		local c_dir=1
+		local c_dir=-1
 		if i%2==1 then
-			c_dir=-1
+			c_dir=1
 		end
 		_x+=c_dir
 	end
