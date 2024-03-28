@@ -6,6 +6,7 @@ __lua__
 
 function _init()
 	music(1)
+	debug={""}
 	effects={}
 	--two flame effects
 	f1c={8,9,10,5}
@@ -15,20 +16,20 @@ function _init()
 	p_y=100
 	p_dx=0
 	p_dy=0
-	max_dx=2
-	max_dy=2
-	acc=0.2
-	vacc=0.3--vertical acc
+	max_dx=3
+	max_dy=3
+	acc=0.3
+	vacc=0.4--vertical acc
 	trashs={}
 	t_spr=16
 	t_cnt=5
 	t_itrvl=16
 	t_ybnd=128
 	t_df_ybnd=128--default y bound
-	t_grav=1
-	grav=1
+	t_grav=2
+	grav=2
 	frict=0.90
-	level=5
+	level=5  --level
 	pt=0
 	t=0
 	--stars
@@ -85,7 +86,7 @@ t+=1
 	if (p_y < 0) p_y=1
 	
 	--trash
-	t_update()
+	trash_update()
 
 	animatestars()
 	
@@ -124,6 +125,12 @@ function _draw()
 	spr(get_frame(ss_ani,2),0,0)
 	print(pt,8,2,7)
 	print("level:"..level,40,2,7)
+
+	offst=0
+	for txt in all(debug) do
+		print(txt,10,offst,8)
+		offst+=8
+	end
 end
 -->8
 --trash
@@ -132,28 +139,30 @@ end
 function load_trash()
 	t_ybnd=t_df_ybnd
 	t_grav=grav
-	
 	if level==1 then	
-		fill_trash(64,1,10,0)--zig
+		fill_trash(64,2,10,0)--zig
 	elseif level==2 then
-		fill_trash(64,-1,10,0)--zig
+		fill_trash(64,-2,10,0)--zig
 	elseif level==3 then
 		fill_trash(0,1,10,1)--cross
 	elseif level==4 then
 		fill_trash(0,1,5,2)--line
 	elseif level==5 then
-		fill_trash(64,1,10,0)--dblzig
-		fill_trash(64,-1,10,0)	
+		fill_trash(88,2,10,0)--dblzig
+		fill_trash(88,-2,10,0)
+	elseif level==6 then
+		fill_trash(32,2,10,0)--dblzig
+		fill_trash(32,-2,10,0)	
 	end
 end
 
-function fill_trash(_x,_dir,_amt,_ord)
+function fill_trash(_x,_sdir,_amt,_typ)
 	for i=1,_amt do
 		local _i,nx=i,_x
-		if _ord==1 and i%2==0 then--cros
+		if _typ==1 and i%2==0 then--cros
 			_i=i-1
 			nx=118
-		elseif _ord==2 then--line
+		elseif _typ==2 then--line
 			nx=20*i
 			_i=1
 		end
@@ -163,16 +172,17 @@ function fill_trash(_x,_dir,_amt,_ord)
  		bx=nx,--base x
  		y=_i*(-t_itrvl),
  		i=i,
- 		dir=_dir,
+ 		dir=_sdir,
+ 		typ=_typ
  	}
  	add(trashs,trash)
  end	
 end
 
-function t_update()
+function trash_update()
 	for trash in all(trashs) do
 		trash.y+=t_grav
-		trash.x=t_pattern(trash)
+		trash.x=get_pattern_x(trash)
 		--trash captured
 		if trash.y+4>p_y-8
 		and trash.y+4<p_y
@@ -198,18 +208,18 @@ function t_update()
 	end
 end
 
-function t_pattern(_t)
-	local _y,_x=_t.y,_t.x
-	if level<3 then
+function get_pattern_x(_t)
+	local _typ=_t.typ
+	if _typ==0 then--zig
 		return zig_p(_t)
-	elseif level==3 then
-		return cros_p(_x,_y,_t.i)
-	elseif level==4 then
-		if _y>100 then
+	elseif _typ==1 then--cros
+		return cros_p(_t)
+	elseif _typ==2 then--line
+		if _t.y>100 then
 			t_grav=-1
 			t_ybnd=0--make bnd top of scrn
 		end
-		return _x
+		return _t.x
 	end	
 end
 
@@ -222,15 +232,15 @@ function zig_p(_t)
 	return _t.x
 end
 
-function cros_p(_x,_y,i)
-	if _y >= 0 then
-		local c_dir=-1
-		if i%2==1 then
-			c_dir=1
+function cros_p(_t)--_x,_y,i)
+	if _t.y >= 0 then
+		local c_dir=-2
+		if _t.i%2==1 then
+			c_dir=2
 		end
-		_x+=c_dir
+		_t.x+=c_dir
 	end
-	return _x
+	return _t.x
 end
 -->8
 --starfield
