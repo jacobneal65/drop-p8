@@ -29,7 +29,7 @@ function _init()
 	t_grav=2
 	grav=2
 	frict=0.90
-	level=5  --level
+	level=1  --level
 	pt=0
 	t=0
 	--stars
@@ -137,6 +137,7 @@ end
 --load trash is called at
 --start and each new level
 function load_trash()
+	t_tmr=0
 	t_ybnd=t_df_ybnd
 	t_grav=grav
 	if level==1 then	
@@ -203,8 +204,13 @@ function trash_update()
 	end
 	--got all trash
 	if #trashs==0 then
-		level+=1
-		load_trash()
+		if t_tmr>60 then
+			level+=1
+			load_trash()
+		else
+			t_tmr+=1
+		end
+		
 	end
 end
 
