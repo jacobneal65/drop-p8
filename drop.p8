@@ -222,7 +222,11 @@ function load_trash()
 		fill_trash(32,2,10,0)--dblzig
 		fill_trash(32,-2,10,0)	
 	elseif level==7 then
-		fill_trash(64,1,1,3)--bezier
+		bx2,by2=-40,32
+		fill_trash(64,1,10,3)--bezier
+	elseif level==8 then
+		bx2,by2=168,32
+		fill_trash(64,1,10,3)--bezier
 	end
 end
 
@@ -235,18 +239,16 @@ function fill_trash(_x,_sdir,_amt,_typ)
 		elseif _typ==2 then--line
 			nx=20*i
 			_i=1
-		elseif _typ==3 then--bezier
-				bx2,by2=0,64
 		end
  	trash={
  		sprite=flr(rnd(t_cnt)+t_spr),
  		x=nx,
  		bx=nx,--base x
- 		y=_i*(-t_itrvl),
- 		by=_i*(-t_itrvl),
+ 		y=-10,
+ 		by=-10,
  		i=i,
  		tmr=0,
- 		
+ 		dly=8*_i,--delay
  		dir=_sdir,
  		typ=_typ,
  	}
@@ -283,14 +285,17 @@ end
 
 function trash_update()
 	for trash in all(trashs) do
-		if trash.typ==3 then
-			trash.
-			trash.x,trash.y=get_pattern_x(trash)
+		if trash.dly >0 then
+			trash.dly-=1
 		else
-			trash.y+=t_grav
-			trash.x=get_pattern_x(trash)
+			if trash.typ==3 then
+					trash.tmr=min(trash.tmr+0.02,1)
+					trash.x,trash.y=get_pattern_x(trash)
+			else
+				trash.y+=t_grav
+				trash.x=get_pattern_x(trash)
+			end
 		end
-		
 		--trash captured
 		if trash_collides(trash) then
 			pt+=1
@@ -331,7 +336,7 @@ function get_pattern_x(_t)
 		end
 		return _t.x
 	elseif _typ==3 then--bezier
-		return bezier_p(_t)
+		return qbc(_t.tmr,_t.bx,_t.by,bx2,by2,64,140)
 	end	
 end
 
@@ -353,11 +358,6 @@ function cros_p(_t)--_x,_y,i)
 		_t.x+=c_dir
 	end
 	return _t.x
-end
-
-function bezier_p(_t)
-	b_tmr=min(b_tmr+0.02,1)
-	return qbc(b_tmr,_t.bx,_t.by,bx2,by2,64,128)
 end
 
 --quadratic bezier curve 3pts
