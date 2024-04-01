@@ -30,7 +30,7 @@ function _init()
 	t_grav=2
 	grav=2
 	frict=0.90
-	level=1  --level
+	level=7--level
 	pt=0--points
 	pt_total=50
 	t=0
@@ -43,7 +43,6 @@ function _init()
 		add(stary,flr(rnd(128)))
 		add(starspd,rnd(1.5)+0.5)		
 	end
-	
 	--spinning score
 	sss=22--starting sprite
 	ssl=9--number of frames
@@ -222,6 +221,8 @@ function load_trash()
 	elseif level==6 then
 		fill_trash(32,2,10,0)--dblzig
 		fill_trash(32,-2,10,0)	
+	elseif level==7 then
+		fill_trash(64,1,1,3)--bezier
 	end
 end
 
@@ -234,13 +235,18 @@ function fill_trash(_x,_sdir,_amt,_typ)
 		elseif _typ==2 then--line
 			nx=20*i
 			_i=1
+		elseif _typ==3 then--bezier
+				bx2,by2=0,64
 		end
  	trash={
  		sprite=flr(rnd(t_cnt)+t_spr),
  		x=nx,
  		bx=nx,--base x
  		y=_i*(-t_itrvl),
+ 		by=_i*(-t_itrvl),
  		i=i,
+ 		tmr=0,
+ 		
  		dir=_sdir,
  		typ=_typ,
  	}
@@ -253,7 +259,6 @@ function trash_collides(trash)
 	pbr=p_x+8
 	pbb=p_y-1
 	pbt=p_y-7
-	
 	tbl=trash.x+3
 	tbr=trash.x+5
 	tx={tbl,tbr}
@@ -278,8 +283,14 @@ end
 
 function trash_update()
 	for trash in all(trashs) do
-		trash.y+=t_grav
-		trash.x=get_pattern_x(trash)
+		if trash.typ==3 then
+			trash.
+			trash.x,trash.y=get_pattern_x(trash)
+		else
+			trash.y+=t_grav
+			trash.x=get_pattern_x(trash)
+		end
+		
 		--trash captured
 		if trash_collides(trash) then
 			pt+=1
@@ -319,6 +330,8 @@ function get_pattern_x(_t)
 			t_ybnd=0--make bnd top of scrn
 		end
 		return _t.x
+	elseif _typ==3 then--bezier
+		return bezier_p(_t)
 	end	
 end
 
@@ -340,6 +353,19 @@ function cros_p(_t)--_x,_y,i)
 		_t.x+=c_dir
 	end
 	return _t.x
+end
+
+function bezier_p(_t)
+	b_tmr=min(b_tmr+0.02,1)
+	return qbc(b_tmr,_t.bx,_t.by,bx2,by2,64,128)
+end
+
+--quadratic bezier curve 3pts
+function qbc(t,x1,y1,x2,y2,x3,y3)
+	local _t1=(1-t)
+	local _x = _t1^2*x1+2*_t1*t*x2+t^2*x3
+	local _y = _t1^2*y1+2*_t1*t*y2+t^2*y3
+	return _x,_y
 end
 -->8
 --starfield
