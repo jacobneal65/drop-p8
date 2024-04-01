@@ -30,7 +30,7 @@ function _init()
 	t_grav=2
 	grav=2
 	frict=0.90
-	level=7--level
+	level=9--level
 	pt=0--points
 	pt_total=50
 	t=0
@@ -227,10 +227,16 @@ function load_trash()
 		fill_trash(32,-2,10,0)	
 	elseif level==7 then
 		bx2,by2=-40,32
+		bx3,by3=64,140
 		fill_trash(64,1,10,3)--bezier
 	elseif level==8 then
 		bx2,by2=168,32
+		bx3,by3=64,140
 		fill_trash(64,1,10,3)--bezier
+	elseif level==9 then
+		bx2,by2=64,150
+		bx3,by3=120,-8
+		fill_trash(8,1,10,3)--bezier
 	end
 end
 
@@ -340,7 +346,8 @@ function get_pattern_x(_t)
 		end
 		return _t.x
 	elseif _typ==3 then--bezier
-		return qbc(_t.tmr,_t.bx,_t.by,bx2,by2,64,140)
+	
+		return qbc(_t.tmr,_t.bx,_t.by,bx2,by2,bx3,by3)
 	end	
 end
 
