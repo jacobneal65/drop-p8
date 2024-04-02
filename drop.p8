@@ -26,7 +26,7 @@ function _init()
 	t_cnt=5
 	t_itrvl=16
 	t_ybnd=128
-	t_df_ybnd=128--default y bound
+	t_uybnd=-11
 	t_grav=2
 	grav=2
 	frict=0.90
@@ -209,7 +209,6 @@ end
 --start and each new level
 function load_trash()
 	t_tmr=0
-	t_ybnd=t_df_ybnd
 	t_grav=grav
 	t_prvw=true
 	if level==1 then	
@@ -236,12 +235,12 @@ function load_trash()
 		fill_trash(64,1,10,3)--qbezier
 	elseif level==9 then
 		bx2,by2=64,150
-		bx3,by3=120,-11
+		bx3,by3=120,t_uybnd
 		fill_trash(8,1,10,3)--qbezier
 	elseif level==10 then
 		bx2,by2=180,120
 		bx3,by3=-60,120
-		bx4,by4=64,-11
+		bx4,by4=64,t_uybnd
 		fill_trash(64,1,10,4)--cbezier
 	end
 end
@@ -325,7 +324,7 @@ function trash_update()
 		
 		--trash survived
 		if trash.y>t_ybnd
-		or trash.y<=-11
+		or trash.y<=t_uybnd
 		then
 			del(trashs,trash)
 			sfx(0)
