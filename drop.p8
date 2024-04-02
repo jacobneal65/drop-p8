@@ -30,7 +30,7 @@ function _init()
 	t_grav=2
 	grav=2
 	frict=0.90
-	level=9--level
+	level=10--level
 	pt=0--points
 	pt_total=50
 	t=0
@@ -228,15 +228,20 @@ function load_trash()
 	elseif level==7 then
 		bx2,by2=-40,32
 		bx3,by3=64,140
-		fill_trash(64,1,10,3)--bezier
+		fill_trash(64,1,10,3)--qbezier
 	elseif level==8 then
 		bx2,by2=168,32
 		bx3,by3=64,140
-		fill_trash(64,1,10,3)--bezier
+		fill_trash(64,1,10,3)--qbezier
 	elseif level==9 then
 		bx2,by2=64,150
 		bx3,by3=120,-8
-		fill_trash(8,1,10,3)--bezier
+		fill_trash(8,1,10,3)--qbezier
+	elseif level==10 then
+		bx2,by2=140,120
+		bx3,by3=-20,120
+		bx4,by4=64,-8
+		fill_trash(64,1,10,4)--cbezier
 	end
 end
 
@@ -258,7 +263,7 @@ function fill_trash(_x,_sdir,_amt,_typ)
  		by=-10,
  		i=i,
  		tmr=0,
- 		dly=8*_i,--delay
+ 		dly=60+8*_i,--delay
  		dir=_sdir,
  		typ=_typ,
  	}
@@ -298,7 +303,7 @@ function trash_update()
 		if trash.dly >0 then
 			trash.dly-=1
 		else
-			if trash.typ==3 then
+			if trash.typ==3 or trash.typ==4 then
 					trash.tmr=min(trash.tmr+0.02,1)
 					trash.x,trash.y=get_pattern_x(trash)
 			else
@@ -345,9 +350,10 @@ function get_pattern_x(_t)
 			t_ybnd=0--make bnd top of scrn
 		end
 		return _t.x
-	elseif _typ==3 then--bezier
-	
+	elseif _typ==3 then--qbezier
 		return qbc(_t.tmr,_t.bx,_t.by,bx2,by2,bx3,by3)
+	elseif _typ==4 then--cbezier
+		return cbc(_t.tmr,_t.bx,_t.by,bx2,by2,bx3,by3,bx4,by4)
 	end	
 end
 
@@ -378,6 +384,15 @@ function qbc(t,x1,y1,x2,y2,x3,y3)
 	local _y = _t1^2*y1+2*_t1*t*y2+t^2*y3
 	return _x,_y
 end
+
+--cubic bezier curve 4pts
+function cbc(t,x1,y1,x2,y2,x3,y3,x4,y4)
+	local _t1=(1-t)
+	local _x = _t1^3*x1+3*_t1^2*t*x2+3*_t1*t^2*x3+t^3*x4
+	local _y = _t1^3*y1+3*_t1^2*t*y2+3*_t1*t^2*y3+t^3*y4
+	return _x,_y
+end
+
 -->8
 --starfield
 function starfield()
