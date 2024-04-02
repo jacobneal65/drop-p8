@@ -236,12 +236,12 @@ function load_trash()
 		fill_trash(64,1,10,3)--qbezier
 	elseif level==9 then
 		bx2,by2=64,150
-		bx3,by3=120,-8
+		bx3,by3=120,-11
 		fill_trash(8,1,10,3)--qbezier
 	elseif level==10 then
 		bx2,by2=180,120
 		bx3,by3=-60,120
-		bx4,by4=64,-8
+		bx4,by4=64,-11
 		fill_trash(64,1,10,4)--cbezier
 	end
 end
@@ -324,8 +324,8 @@ function trash_update()
 		end
 		
 		--trash survived
-		if (trash.y>t_ybnd and t_ybnd>0)
-		or (trash.y<=0 and t_ybnd==0)
+		if trash.y>t_ybnd
+		or trash.y<=-11
 		then
 			del(trashs,trash)
 			sfx(0)
@@ -352,7 +352,6 @@ function get_pattern_x(_t)
 	elseif _typ==2 then--line
 		if _t.y>100 then
 			t_grav=-1
-			t_ybnd=0--make bnd top of scrn
 		end
 		return _t.x
 	elseif _typ==3 then--qbezier
