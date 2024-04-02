@@ -25,12 +25,12 @@ function _init()
 	t_spr=64 --trash sprite
 	t_cnt=5
 	t_itrvl=16
-	t_ybnd=128
-	t_uybnd=-11
+	t_ybnd=128--lower y bound
+	t_uybnd=-11--upper y bound
 	t_grav=2
 	grav=2
 	frict=0.90
-	level=9--level
+	level=1--level
 	pt=0--points
 	pt_total=50
 	t=0
@@ -51,11 +51,14 @@ function _init()
 		add(ss_ani,sss+i)
 	end
 	
+	dots={}--used for preview
+	_upd=upd_player
+	_drw=drw_player
+	
  load_trash()
 end
 
-function _update()
-t+=1
+function upd_player()
 	update_fx()
 	--plyr friction
 	p_dx*=frict
@@ -63,8 +66,6 @@ t+=1
 
 	p_l=false
 	p_r=false
-	p_u=false
-	p_d=false
 	p_spr=3
 	b_spr=1
 	s_spr=19
@@ -89,8 +90,8 @@ t+=1
 	 p_flp=true
 	end
 	--up/down
-	if (btn(2)) p_dy-=vacc p_u=true sfx(3)
-	if (btn(3)) p_dy+=vacc p_d=true sfx(2)
+	if (btn(2)) p_dy-=vacc sfx(3)
+	if (btn(3)) p_dy+=vacc sfx(2)
 	
 	p_dx=(mid(-max_dx,p_dx,max_dx))
 	p_dy=(mid(-max_dy,p_dy,max_dy))
@@ -107,11 +108,29 @@ t+=1
 	trash_update()
 
 	animatestars()
+end
+
+function _update()
+	t+=1
+	_upd()
 	
 end
 
 function _draw()
 	cls()
+	_drw()
+	
+	--debug
+	--debug_bounds()
+	offst=0
+	for txt in all(debug) do
+		print(txt,10,offst,8)
+		offst+=8
+	end
+end
+
+
+function drw_player()
 	starfield()
  	draw_fx()
  local t_px=flr(p_x)
@@ -150,14 +169,6 @@ function _draw()
 		fire(p_x+1,p_y+4,-0.5,0,1,2,f2c)				
 	end
 	
-	if p_u then
-		--fire(p_x+4,p_y+4,0,0.5,2,5,f1c)
-	elseif p_d then
-		--fire(p_x+4,p_y-2,0,0,-0.5,10,f2c)
-	else		
-		
-	end
-	
 	--flame
 	f_sprs={5,6,7,6,5}
 	spr(get_frame(f_sprs,1),t_px,t_py+8)
@@ -170,38 +181,13 @@ function _draw()
 	pset(t.x+3,t.y+3,7)
 	end
 	
+	for d in all(dots) do
+		circfill(d.x+4,d.y+4,2,8)
+	end
+	
 	spr(get_frame(ss_ani,2),0,0)
 	print(pt,8,2,7)
 	print("level:"..level,40,2,7)
-	
-	--debug_bounds()
-	
-	--debug
-	offst=0
-	for txt in all(debug) do
-		print(txt,10,offst,8)
-		offst+=8
-	end
-end
-
-function debug_bounds()
-
-	pbl=p_x-1
-	pbr=p_x+8
-	pbb=p_y-1
-	pbt=p_y-7
-
-	pset(p_x-1,p_y-1,8)--bl
-	pset(p_x+8,p_y-1,8)--br
-	pset(p_x-1,p_y-7,8)--tl
-	pset(p_x+8,p_y-7,8)--tr
-	
-		
-		
-	for trash in all(trashs) do
-		pset(trash.x+4,trash.y+4,8)
-	end
-		
 end
 -->8
 --trash
@@ -210,7 +196,8 @@ end
 function load_trash()
 	t_tmr=0
 	t_grav=grav
-	t_prvw=true
+	prvw=true
+	prvw_tmr=0
 	if level==1 then	
 		fill_trash(64,2,10,0)--zig
 	elseif level==2 then
@@ -246,6 +233,7 @@ function load_trash()
 end
 
 function fill_trash(_x,_sdir,_amt,_typ)
+	prvw_typ=_typ
 	for i=1,_amt do
 		local _i,nx=i,_x
 		if _typ==1 and i%2==0 then--cros
@@ -256,7 +244,6 @@ function fill_trash(_x,_sdir,_amt,_typ)
 			_i=1
 		end
  	trash={
- 		sprite=flr(rnd(t_cnt)+t_spr),
  		x=nx,
  		bx=nx,--base x
  		y=-10,
@@ -299,50 +286,74 @@ function trash_collides(trash)
 end
 
 function trash_update()
-	for trash in all(trashs) do
-		t_prvw=false
-		if t_prvw then
+	if prvw then
+		--draw the pattern preview
+		dots={trashs[1]}
+		d_tmr=0
+		local cd = dots[1]
+		while d_tmr<10 do
+			d_tmr+=1
+			--cd.tmr=d_tmr/60
 			
-	
-		elseif trash.dly >0 then
-			trash.dly-=1
+			--if cd.typ==3 or cd.typ==4 then
+			--		cd.x,cd.y=get_pattern(cd)
+			--else
+			cd.y+=t_grav
+			cd.x=get_pattern(cd)
+			--end
+			add(dots,cd,d_tmr)
+		end
+		
+		debug[1]=dots[2].x
+		if prvw_tmr<60 then
+			prvw_tmr+=1
 		else
-			if trash.typ==3 or trash.typ==4 then
-					trash.tmr=min(trash.tmr+0.02,1)
-					trash.x,trash.y=get_pattern_x(trash)
+			prvw=false
+		end
+		
+		--else start the delay
+	else
+		for trash in all(trashs) do
+			if trash.dly >0 then
+				trash.dly-=1
 			else
-				trash.y+=t_grav
-				trash.x=get_pattern_x(trash)
+				if trash.typ==3 or trash.typ==4 then
+						trash.tmr=min(trash.tmr+0.02,1)
+						trash.x,trash.y=get_pattern(trash)
+				else
+					trash.y+=t_grav
+					trash.x=get_pattern(trash)
+				end
+			end
+			--trash captured
+			if trash_collides(trash) then
+				pt+=1
+				del(trashs,trash)
+				sfx(1)
+			end
+			
+			--trash survived
+			if trash.y>t_ybnd
+			or trash.y<=t_uybnd
+			then
+				del(trashs,trash)
+				sfx(0)
 			end
 		end
-		--trash captured
-		if trash_collides(trash) then
-			pt+=1
-			del(trashs,trash)
-			sfx(1)
+		--got all trash
+		if #trashs==0 then
+			if t_tmr>60 then
+				level+=1
+				load_trash()
+			else
+				t_tmr+=1
+			end
+			
 		end
-		
-		--trash survived
-		if trash.y>t_ybnd
-		or trash.y<=t_uybnd
-		then
-			del(trashs,trash)
-			sfx(0)
-		end
-	end
-	--got all trash
-	if #trashs==0 then
-		if t_tmr>60 then
-			level+=1
-			load_trash()
-		else
-			t_tmr+=1
-		end
-		
 	end
 end
 
-function get_pattern_x(_t)
+function get_pattern(_t)
 	local _typ=_t.typ
 	if _typ==0 then--zig
 		return zig_p(_t)
@@ -369,7 +380,7 @@ function zig_p(_t)
 	return _t.x
 end
 
-function cros_p(_t)--_x,_y,i)
+function cros_p(_t)
 	if _t.y >= 0 then
 		local c_dir=-2
 		if _t.i%2==1 then
@@ -432,6 +443,25 @@ end
 function get_frame(ani,spd)
  return ani[flr(t/spd)%#ani+1]
 end 
+
+
+function debug_bounds()
+	pbl=p_x-1
+	pbr=p_x+8
+	pbb=p_y-1
+	pbt=p_y-7
+	pset(p_x-1,p_y-1,8)--bl
+	pset(p_x+8,p_y-1,8)--br
+	pset(p_x-1,p_y-7,8)--tl
+	pset(p_x+8,p_y-7,8)--tr
+	
+		
+		
+	for trash in all(trashs) do
+		pset(trash.x+4,trash.y+4,8)
+	end
+		
+end
 -->8
 --particles
 function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table)
