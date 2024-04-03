@@ -106,13 +106,13 @@ function upd_player()
 	
 	--trash
 	trash_update()
-
-	animatestars()
 end
 
 function _update()
 	t+=1
 	_upd()
+	
+	animatestars()
 	
 end
 
@@ -136,6 +136,11 @@ function drw_player()
  local t_px=flr(p_x)
  local t_py=flr(p_y)
 	--rectfill(0,108,127,127,3)
+	
+	--guide line
+	for d in all(dots) do
+		pset(d.x+4,d.y+4,8)
+	end
 	
 	--flill tank amount
  tank=flr(pt/pt_total*12)
@@ -181,9 +186,6 @@ function drw_player()
 	pset(t.x+3,t.y+3,7)
 	end
 	
-	for d in all(dots) do
-		circfill(d.x+4,d.y+4,2,8)
-	end
 	
 	spr(get_frame(ss_ani,2),0,0)
 	print(pt,8,2,7)
@@ -195,7 +197,7 @@ end
 --start and each new level
 function load_trash()
 	t_tmr=0
-	t_grav=grav
+	t_grav=2
 	prvw=true
 	prvw_tmr=0
 	if level==1 then	
@@ -207,11 +209,9 @@ function load_trash()
 	elseif level==4 then
 		fill_trash(0,1,5,2)--line
 	elseif level==5 then
-		fill_trash(88,2,10,0)--dblzig
 		fill_trash(88,-2,10,0)
 	elseif level==6 then
-		fill_trash(32,2,10,0)--dblzig
-		fill_trash(32,-2,10,0)	
+		fill_trash(32,2,10,0)--zig
 	elseif level==7 then
 		bx2,by2=-40,32
 		bx3,by3=64,140
@@ -250,7 +250,7 @@ function fill_trash(_x,_sdir,_amt,_typ)
  		by=-10,
  		i=i,
  		tmr=0,
- 		dly=30+8*_i,--delay
+ 		dly=8*_i,--delay
  		dir=_sdir,
  		typ=_typ,
  	}
@@ -285,32 +285,37 @@ function trash_collides(trash)
 	return t_c
 end
 
-function trash_update()
-	if prvw then
-		--draw the pattern preview
-		dots={trashs[1]}
+
+function update_dots()
+--draw the pattern preview
+		dots={ct(trashs[1])}
 		d_tmr=0
-		local cd = dots[1]
-		while d_tmr<10 do
+		local cd = ct(dots[1])
+		while d_tmr<prvw_tmr do
 			d_tmr+=1
-			--cd.tmr=d_tmr/60
-			
-			--if cd.typ==3 or cd.typ==4 then
-			--		cd.x,cd.y=get_pattern(cd)
-			--else
-			cd.y+=t_grav
-			cd.x=get_pattern(cd)
-			--end
-			add(dots,cd,d_tmr)
+			if cd.typ==3 or cd.typ==4 then
+					cd.tmr=min(cd.tmr+0.02,1)
+					cd.x,cd.y=get_pattern(cd)
+			else
+				cd.y+=t_grav
+				cd.x=get_pattern(cd)
+			end
+			add(dots,ct(cd),d_tmr)
 		end
 		
-		debug[1]=dots[2].x
 		if prvw_tmr<60 then
 			prvw_tmr+=1
 		else
 			prvw=false
+			t_grav=grav
+			dots={}
 		end
-		
+end
+
+
+function trash_update()
+	if prvw then
+		update_dots()
 		--else start the delay
 	else
 		for trash in all(trashs) do
@@ -342,13 +347,8 @@ function trash_update()
 		end
 		--got all trash
 		if #trashs==0 then
-			if t_tmr>60 then
-				level+=1
-				load_trash()
-			else
-				t_tmr+=1
-			end
-			
+			level+=1
+			load_trash()
 		end
 	end
 end
@@ -454,13 +454,20 @@ function debug_bounds()
 	pset(p_x+8,p_y-1,8)--br
 	pset(p_x-1,p_y-7,8)--tl
 	pset(p_x+8,p_y-7,8)--tr
-	
-		
 		
 	for trash in all(trashs) do
 		pset(trash.x+4,trash.y+4,8)
 	end
 		
+end
+
+--copy table
+function ct(table)
+	_nt={}
+	for key,value in pairs(table) do
+		_nt[key]=value
+	end
+	return _nt
 end
 -->8
 --particles
