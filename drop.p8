@@ -4,7 +4,6 @@ __lua__
 --comet collection
 --sun chaser
 --by olivander65
-
 function _init()
 	music(1)
 	debug={""}
@@ -30,7 +29,7 @@ function _init()
 	t_grav=2
 	grav=2
 	frict=0.90
-	level=1--level
+	level=3--level
 	pt=0--points
 	pt_total=50
 	t=0
@@ -52,8 +51,12 @@ function _init()
 	end
 	
 	dots={}--used for preview
+	_dot_fn=init_dots--dots function
+	
 	_upd=upd_player
 	_drw=drw_player
+	
+	
 	
  load_trash()
 end
@@ -63,7 +66,9 @@ function upd_player()
 	--plyr friction
 	p_dx*=frict
 	p_dy*=frict
-
+	--player collision offsets 
+	--l,r,b,t
+	pc_off={-1,8,1,-7}
 	p_l=false
 	p_r=false
 	p_spr=3
@@ -102,7 +107,7 @@ function upd_player()
 	if (p_x > 114) p_x=114
 	if (p_x < 0) p_x=1
 	if (p_y > 120) p_y=120
-	if (p_y < 0) p_y=1
+	if (p_y < 16) p_y=17
 	
 	--trash
 	trash_update()
@@ -118,6 +123,9 @@ end
 
 function _draw()
 	cls()
+	rectfill(0,0,128,8,1)
+	starfield()
+	draw_fx()
 	_drw()
 	
 	--debug
@@ -131,13 +139,12 @@ end
 
 
 function drw_player()
-	starfield()
- 	draw_fx()
+
  local t_px=flr(p_x)
  local t_py=flr(p_y)
 	--rectfill(0,108,127,127,3)
 	
-	--guide line
+	--dots line
 	for d in all(dots) do
 		pset(d.x+4,d.y+4,8)
 	end
@@ -210,8 +217,10 @@ function load_trash()
 		fill_trash(0,1,5,2)--line
 	elseif level==5 then
 		fill_trash(88,-2,10,0)
+		fill_trash(88,2,10,0)--dzig
 	elseif level==6 then
-		fill_trash(32,2,10,0)--zig
+		fill_trash(32,2,10,0)--dzig
+		fill_trash(32,-2,10,0)
 	elseif level==7 then
 		bx2,by2=-40,32
 		bx3,by3=64,140
@@ -259,10 +268,11 @@ function fill_trash(_x,_sdir,_amt,_typ)
 end
 
 function trash_collides(trash)
-	pbl=p_x-1
-	pbr=p_x+8
-	pbb=p_y-1
-	pbt=p_y-7
+
+	pbl=p_x+pc_off[1]
+	pbr=p_x+pc_off[2]
+	pbb=p_y+pc_off[3]
+	pbt=p_y+pc_off[4]
 	tbl=trash.x+3
 	tbr=trash.x+5
 	tx={tbl,tbr}
@@ -285,37 +295,53 @@ function trash_collides(trash)
 	return t_c
 end
 
+function init_dots()
+	dots={}
+	for i=1,#trashs do
+		add(dots,ct(trashs[i]))
+	end
+	_dot_fn=update_dots
+end
 
 function update_dots()
---draw the pattern preview
-		dots={ct(trashs[1])}
-		d_tmr=0
-		local cd = ct(dots[1])
-		while d_tmr<prvw_tmr do
-			d_tmr+=1
-			if cd.typ==3 or cd.typ==4 then
-					cd.tmr=min(cd.tmr+0.02,1)
-					cd.x,cd.y=get_pattern(cd)
+		for cd in all(dots) do
+			if cd.dly >0 then
+					cd.dly-=1
 			else
-				cd.y+=t_grav
-				cd.x=get_pattern(cd)
+				local _typ = cd.typ
+				local _i,nx=i,_x
+				if _typ==3 or _typ==4 then
+						cd.tmr=min(cd.tmr+0.02,1)
+						cd.x,cd.y=get_pattern(cd)
+				else
+					cd.y+=t_grav
+					cd.x=get_pattern(cd)
+				end
 			end
-			add(dots,ct(cd),d_tmr)
 		end
-		
-		if prvw_tmr<60 then
+		if prvw_tmr<=70 then
 			prvw_tmr+=1
 		else
-			prvw=false
-			t_grav=grav
-			dots={}
+			_dot_fn=finish_dots--switch fn
 		end
+end
+
+function finish_dots()
+	deli(dots,1)
+	if #dots>0 then
+		deli(dots,1)
+	end
+	if #dots==0 then
+		prvw=false
+		t_grav=grav
+		_dot_fn=init_dots
+	end
 end
 
 
 function trash_update()
 	if prvw then
-		update_dots()
+		_dot_fn()
 		--else start the delay
 	else
 		for trash in all(trashs) do
@@ -446,14 +472,15 @@ end
 
 
 function debug_bounds()
-	pbl=p_x-1
-	pbr=p_x+8
-	pbb=p_y-1
-	pbt=p_y-7
-	pset(p_x-1,p_y-1,8)--bl
-	pset(p_x+8,p_y-1,8)--br
-	pset(p_x-1,p_y-7,8)--tl
-	pset(p_x+8,p_y-7,8)--tr
+	--l,r,b,t
+	local pl=p_x+pc_off[1]--l
+	local pr=p_x+pc_off[2]--r
+	local pb=p_y+pc_off[3]--b
+	local pt=p_y+pc_off[4]--t
+	pset(pl,pb,8)--bl
+	pset(pr,pb,8)--br
+	pset(pl,pt,8)--tl
+	pset(pr,pt,8)--tr
 		
 	for trash in all(trashs) do
 		pset(trash.x+4,trash.y+4,8)
