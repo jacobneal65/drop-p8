@@ -1,6 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
+--main
 --comet collection
 --sun chaser
 --by olivander65
@@ -11,6 +12,7 @@ function _init()
 	--two flame effects
 	f1c={8,9,10,5}--red effect
 	f2c={7,6,6,5}--white to grey
+	f3c={}
 	--player
 	p_x=64
 	p_y=100
@@ -56,7 +58,11 @@ function _init()
 	_upd=upd_player
 	_drw=drw_player
 	
-	
+		--screen shake variables
+	intensity = 0
+	score_intensity = 0
+	shake_control = 2
+	cam_x,cam_y=0,0
 	
  load_trash()
 end
@@ -115,6 +121,7 @@ end
 
 function _update()
 	t+=1
+	if intensity > 0 then shake() end
 	_upd()
 	
 	animatestars()
@@ -146,9 +153,9 @@ function drw_player()
 	
 	--dots line
 	for d in all(dots) do
-		pset(d.x+4,d.y+4,8)
+		pset(d.x+4,d.y+4,2)
 --(x,y,dx,dy,r,l,c_table)
-		fire(d.x+5,d.y+5,0,-0.5,1,2,f1c)
+		fire(d.x+5,d.y+5,0,-0.5,1,2,f2c)
 	end
 	
 	--flill tank amount
@@ -193,16 +200,21 @@ function drw_player()
 	circfill(t.x+4,t.y+4,2,12)
 	rectfill(t.x+3,t.y+3,t.x+5,t.y+5,9)
 	pset(t.x+3,t.y+3,7)
-			fire(t.x+5,t.y+5,0,-0.5,1,2,f1c)
+	fire(t.x+5,t.y+5,0,-0.5,2,3,f1c)
 	end
 	
 	
-	spr(get_frame(ss_ani,2),0,0)
-	print(pt,8,2,7)
+	local lx,ly=8,2,2
+	if score_intensity > 0 then 
+		lx,ly,score_intensity=shake_field(lx,ly,score_intensity)
+	end
+	spr(get_frame(ss_ani,2),lx-8,ly-2)
+	print(pt,lx,ly,7)
+	
 	print("level:"..level,40,2,7)
 end
 -->8
---trash
+--items
 --load trash is called at
 --start and each new level
 function load_trash()
@@ -361,6 +373,7 @@ function trash_update()
 			end
 			--trash captured
 			if trash_collides(trash) then
+				score_intensity=0.5
 				pt+=1
 				del(trashs,trash)
 				sfx(1)
@@ -499,6 +512,37 @@ function ct(table)
 	end
 	return _nt
 end
+
+
+function shake()
+	local shake_x=rnd(intensity) - (intensity /2)
+	local shake_y=rnd(intensity) - (intensity /2)
+  
+	--offset the camera
+	camera( shake_x + cam_x, shake_y + cam_y)
+  
+	--ease shake and return to normal
+	intensity *= .9
+	if intensity < .3 then 
+		intensity = 0 
+		camera(cam_x,cam_y)
+	end
+end
+
+function shake_field(_x,_y,_intensity)
+	local shk_x=rnd(_intensity) - (_intensity /2)
+	local shk_y=rnd(_intensity) - (_intensity /2)
+	local rx,ry=shk_x+_x,shk_y+_y
+	--ease shake and return to normal
+	_intensity *= .9
+	if _intensity < .3 then 
+		return _x,_y,0
+	end
+	return rx,ry,_intensity
+end
+
+
+
 -->8
 --particles
 function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table)
@@ -629,9 +673,11 @@ __sfx__
 4b0100000665007650076500c6500e650106501265013650176501a6501c6501e6502165024650286502a6002c6002c6002c6002d6002d6002e60030600306003060030600306003160031600000000000000000
 051000000005500055000050000500055000550000500005000550005500005000050005500055000050000500055000550000500005000550005500005000050005500055000050000500055000550000500005
 051000000000000000000030000300053000000000300003000000000000000000000005300000000000000300000000000000000000000530000000000000000000000000000000000000053000000000000003
+00010000080500a0500d0502a050140501c0503205025050000002c05028050300502305034050360503905015050100501005010050100500000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-09200000232502325023250232502625028250282502825028250282502625026250262502625026250262502625026250232501f2501f2501f2501f2501f2501c2501c2501c2501c2501f2501f2501f2501f250
+01200000233222332223322233222632228322283222832228322283222632226322263222632226322263222632226322233221f3221f3221f3221f3221f3221c3221c3221c3221c3221f3221f3221f3221f322
+010100001405016050190503605020050280503e050310503000038050340503c0502f050340503605039050210501c0501c0501c0501c0500000000000000000000000000000000000000000000000000000000
+00010000190500e0501005014050160503705037050300503805038050300503805031050380503805032050380503405039050390503a0500000000000000000000000000000000000000000000000000000000
 __music__
 01 04454344
 02 04054344
