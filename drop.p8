@@ -9,8 +9,8 @@ function _init()
 	debug={""}
 	effects={}
 	--two flame effects
-	f1c={8,9,10,5}
-	f2c={7,6,6,5}
+	f1c={8,9,10,5}--red effect
+	f2c={7,6,6,5}--white to grey
 	--player
 	p_x=64
 	p_y=100
@@ -29,7 +29,7 @@ function _init()
 	t_grav=2
 	grav=2
 	frict=0.90
-	level=3--level
+	level=1--level
 	pt=0--points
 	pt_total=50
 	t=0
@@ -147,6 +147,8 @@ function drw_player()
 	--dots line
 	for d in all(dots) do
 		pset(d.x+4,d.y+4,8)
+--(x,y,dx,dy,r,l,c_table)
+		fire(d.x+5,d.y+5,0,-0.5,1,2,f1c)
 	end
 	
 	--flill tank amount
@@ -191,6 +193,7 @@ function drw_player()
 	circfill(t.x+4,t.y+4,2,12)
 	rectfill(t.x+3,t.y+3,t.x+5,t.y+5,9)
 	pset(t.x+3,t.y+3,7)
+			fire(t.x+5,t.y+5,0,-0.5,1,2,f1c)
 	end
 	
 	
