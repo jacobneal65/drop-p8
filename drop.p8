@@ -7,6 +7,7 @@ __lua__
 --by olivander65
 function _init()
 	music(1)
+	--
 	t=0
 	debug={""}
 	effects={}
