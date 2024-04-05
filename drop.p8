@@ -349,7 +349,6 @@ function update_dots()
 					cd.dly-=1
 			else
 				local _typ = cd.typ
-				local _i,nx=i,_x
 				if _typ==3 or _typ==4 then
 						cd.tmr=min(cd.tmr+0.02,1)
 						cd.x,cd.y=get_pattern(cd)
