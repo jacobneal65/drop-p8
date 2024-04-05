@@ -37,6 +37,7 @@ function _init()
 	mult=1
 	mult_up=0
 	combo=0
+	tf_tmr=0--transfer timer
 	
 	pt=0--points
 	pt_total=500
@@ -121,9 +122,22 @@ function upd_player()
 	if (p_x < 0) p_x=1
 	if (p_y > 120) p_y=120
 	if (p_y < 16) p_y=17
-	
+	transfer_points()
 	--trash
 	trash_update()
+end
+
+function transfer_points()
+		if tf_tmr>60 then
+				if combo>0 then
+					combo-=1
+					pt+=1
+				else
+				 tf_tmr=0
+				end
+		else
+			tf_tmr+=1
+		end
 end
 
 function _update()
@@ -216,7 +230,7 @@ function drw_player()
 	
 	--combo
 	local c = combo.." x"..mult
-	local lx,ly=128-#c*4,2
+	local lx,ly=126-#c*4,2
 	if score_intensity > 0 then 
 		lx,ly,score_intensity=shake_field(lx,ly,score_intensity)
 	end
@@ -392,9 +406,10 @@ function trash_update()
 				end
 				combo+=1*mult
 				del(trashs,trash)
+				tf_tmr=0
 				sfx(1)
 			end
-			
+
 			--trash survived
 			if trash.y>t_ybnd
 			or trash.y<=t_uybnd
@@ -404,7 +419,7 @@ function trash_update()
 				mult_up=0
 				sfx(0)
 			end
-		end
+		end		
 		--got all trash
 		if #trashs==0 then
 			level+=1
@@ -412,6 +427,8 @@ function trash_update()
 		end
 	end
 end
+
+
 
 function get_pattern(_t)
 	local _typ=_t.typ
