@@ -24,8 +24,8 @@ function _init()
 	max_dy=3
 	acc=0.3
 	vacc=0.3--vertical acc
-	trashs={}
-	t_spr=64 --trash sprite
+	fruits={}
+	t_spr=64 --fruit sprite
 	t_cnt=5
 	t_itrvl=16
 	t_ybnd=128--lower y bound
@@ -73,7 +73,7 @@ function _init()
 	shake_control = 2
 	cam_x,cam_y=0,0
 	
- load_trash()
+ load_fruit()
 end
 
 function upd_player()
@@ -124,8 +124,8 @@ function upd_player()
 	if (p_y > 120) p_y=120
 	if (p_y < 16) p_y=17
 	transfer_points()
-	--trash
-	trash_update()
+	--fruit
+	fruit_update()
 end
 
 function transfer_points()
@@ -216,9 +216,9 @@ function drw_player()
 	f_sprs={5,6,7,6,5}
 	spr(get_frame(f_sprs,1),t_px,t_py+8)
 
-	--trash
-	for t in all(trashs) do
---		spr(trash.sprite,trash.x,trash.y)
+	--fruit
+	for t in all(fruits) do
+--		spr(fruit.sprite,fruit.x,fruit.y)
 	circfill(t.x+4,t.y+4,2,12)
 	rectfill(t.x+3,t.y+3,t.x+5,t.y+5,9)
 	pset(t.x+3,t.y+3,7)
@@ -242,48 +242,48 @@ function drw_player()
 end
 -->8
 --fruit
---load trash is called at
+--load fruit is called at
 --start and each new level
-function load_trash()
+function load_fruit()
 	t_tmr=0
 	t_grav=2
 	prvw=true
 	prvw_tmr=0
 	if level==1 then	
-		fill_trash(64,2,10,0)--zig
+		fill_fruit(64,2,10,0)--zig
 	elseif level==2 then
-		fill_trash(64,-2,10,0)--zig
+		fill_fruit(64,-2,10,0)--zig
 	elseif level==3 then
-		fill_trash(0,1,10,1)--cross
+		fill_fruit(0,1,10,1)--cross
 	elseif level==4 then
-		fill_trash(0,1,5,2)--line
+		fill_fruit(0,1,5,2)--line
 	elseif level==5 then
-		fill_trash(88,-2,10,0)
-		fill_trash(88,2,10,0)--dzig
+		fill_fruit(88,-2,10,0)
+		fill_fruit(88,2,10,0)--dzig
 	elseif level==6 then
-		fill_trash(32,2,10,0)--dzig
-		fill_trash(32,-2,10,0)
+		fill_fruit(32,2,10,0)--dzig
+		fill_fruit(32,-2,10,0)
 	elseif level==7 then
 		bx2,by2=-40,32
 		bx3,by3=64,140
-		fill_trash(64,1,10,3)--qbezier
+		fill_fruit(64,1,10,3)--qbezier
 	elseif level==8 then
 		bx2,by2=168,32
 		bx3,by3=64,140
-		fill_trash(64,1,10,3)--qbezier
+		fill_fruit(64,1,10,3)--qbezier
 	elseif level==9 then
 		bx2,by2=64,150
 		bx3,by3=120,t_uybnd
-		fill_trash(8,1,10,3)--qbezier
+		fill_fruit(8,1,10,3)--qbezier
 	elseif level==10 then
 		bx2,by2=180,120
 		bx3,by3=-60,120
 		bx4,by4=64,t_uybnd
-		fill_trash(64,1,10,4)--cbezier
+		fill_fruit(64,1,10,4)--cbezier
 	end
 end
 
-function fill_trash(_x,_sdir,_amt,_typ)
+function fill_fruit(_x,_sdir,_amt,_typ)
 	prvw_typ=_typ
 	for i=1,_amt do
 		local _i,nx=i,_x
@@ -294,7 +294,7 @@ function fill_trash(_x,_sdir,_amt,_typ)
 			nx=20*i
 			_i=1
 		end
- 	trash={
+ 	fruit={
  		x=nx,
  		bx=nx,--base x
  		y=-10,
@@ -305,25 +305,25 @@ function fill_trash(_x,_sdir,_amt,_typ)
  		dir=_sdir,
  		typ=_typ,
  	}
- 	add(trashs,trash)
+ 	add(fruits,fruit)
  end	
 end
 
-function trash_collides(trash)
+function fruit_collides(fruit)
 	pbl=p_x+pc_off[1]
 	pbr=p_x+pc_off[2]
 	pbb=p_y+pc_off[3]
 	pbt=p_y+pc_off[4]
-	tbl=trash.x+3
-	tbr=trash.x+5
+	tbl=fruit.x+3
+	tbr=fruit.x+5
 	tx={tbl,tbr}
 	
-	tbt=trash.y+3
-	tbb=trash.y+5
+	tbt=fruit.y+3
+	tbb=fruit.y+5
 	
 	ty={tbt,tbb}
 
-	t_c=false--trash collision
+	t_c=false--fruit collision
 	for i=1,2 do
 		if tx[i]<pbr and tx[i]>pbl then
 			for j=1,2 do
@@ -338,8 +338,8 @@ end
 
 function init_dots()
 	dots={}
-	for i=1,#trashs do
-		add(dots,ct(trashs[i]))
+	for i=1,#fruits do
+		add(dots,ct(fruits[i]))
 	end
 	_dot_fn=update_dots
 end
@@ -379,25 +379,25 @@ function finish_dots()
 end
 
 
-function trash_update()
+function fruit_update()
 	if prvw then
 		_dot_fn()
 		--else start the delay
 	else
-		for trash in all(trashs) do
-			if trash.dly >0 then
-				trash.dly-=1
+		for fruit in all(fruits) do
+			if fruit.dly >0 then
+				fruit.dly-=1
 			else
-				if trash.typ==3 or trash.typ==4 then
-						trash.tmr=min(trash.tmr+0.02,1)
-						trash.x,trash.y=get_pattern(trash)
+				if fruit.typ==3 or fruit.typ==4 then
+						fruit.tmr=min(fruit.tmr+0.02,1)
+						fruit.x,fruit.y=get_pattern(fruit)
 				else
-					trash.y+=t_grav
-					trash.x=get_pattern(trash)
+					fruit.y+=t_grav
+					fruit.x=get_pattern(fruit)
 				end
 			end
-			--trash captured
-			if trash_collides(trash) then
+			--fruit captured
+			if fruit_collides(fruit) then
 				score_intensity=0.5
 				mult_up+=1
 				if mult_up > 9 then
@@ -405,25 +405,25 @@ function trash_update()
 					mult+=1
 				end
 				combo+=1*mult
-				del(trashs,trash)
+				del(fruits,fruit)
 				tf_tmr=0
 				sfx(1)
 			end
 
-			--trash survived
-			if trash.y>t_ybnd
-			or trash.y<=t_uybnd
+			--fruit survived
+			if fruit.y>t_ybnd
+			or fruit.y<=t_uybnd
 			then
-				del(trashs,trash)
+				del(fruits,fruit)
 				mult=1
 				mult_up=0
 				sfx(0)
 			end
 		end		
-		--got all trash
-		if #trashs==0 then
+		--got all fruit
+		if #fruits==0 then
 			level+=1
-			load_trash()
+			load_fruit()
 		end
 	end
 end
@@ -533,8 +533,8 @@ function debug_bounds()
 	pset(pl,pt,8)--tl
 	pset(pr,pt,8)--tr
 		
-	for trash in all(trashs) do
-		pset(trash.x+4,trash.y+4,8)
+	for fruit in all(fruits) do
+		pset(fruit.x+4,fruit.y+4,8)
 	end
 		
 end
