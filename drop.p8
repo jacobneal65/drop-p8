@@ -14,7 +14,8 @@ function _init()
 	--two flame effects
 	f1c={8,9,10,5}--red effect
 	f2c={7,6,6,5}--white to grey
-	f3c={}
+	f3c={7,12,12,1}--blue flame
+
 	--player
 	p_x=64
 	p_y=100
@@ -25,6 +26,7 @@ function _init()
 	acc=0.3
 	vacc=0.3--vertical acc
 	fruits={}
+	fruitlet={}
 	t_spr=64 --fruit sprite
 	t_cnt=5
 	t_itrvl=16
@@ -33,16 +35,16 @@ function _init()
 	t_grav=2
 	grav=2
 	frict=0.90
-	level=1--level
 	
+	--point and level
+	level=1
 	mult=1
 	mult_up=0
 	combo=0
 	mult_sfx=1
 	tf_tmr=0--transfer timer
-	
-	pt=0--points
-	pt_total=500
+	points=0--points
+	point_total=500
 	
 	
 	--stars
@@ -75,6 +77,7 @@ function _init()
 	cam_x,cam_y=0,0
 	
  load_fruit()
+ init_fruitlet()
 end
 
 function upd_player()
@@ -127,13 +130,14 @@ function upd_player()
 	transfer_points()
 	--fruit
 	fruit_update()
+	update_fruitlet()
 end
 
 function transfer_points()
 		if tf_tmr>60 then
 				if combo>0 then
 					combo-=1
-					pt+=1
+					points+=1
 				else
 				 tf_tmr=0
 				end
@@ -182,7 +186,7 @@ function drw_player()
 	end
 	
 	--flill tank amount
- tank=flr(pt/pt_total*12)
+ tank=flr(points/point_total*12)
  ty=0
  tc1=9
  tc2=10
@@ -217,18 +221,12 @@ function drw_player()
 	f_sprs={5,6,7,6,5}
 	spr(get_frame(f_sprs,1),t_px,t_py+8)
 
-	--fruit
-	for t in all(fruits) do
---		spr(fruit.sprite,fruit.x,fruit.y)
-	circfill(t.x+4,t.y+4,2,12)
-	rectfill(t.x+3,t.y+3,t.x+5,t.y+5,9)
-	pset(t.x+3,t.y+3,7)
-	fire(t.x+5,t.y+5,0,-0.5,2,3,f1c)
-	end
+	draw_fruit()
+	
 	
 	--points
 	spr(get_frame(ss_ani,2),0,0)
-	print(pt,8,2,7)
+	print(points,8,2,7)
 	
 	--combo
 	local c = combo.." x"..mult
@@ -238,8 +236,21 @@ function drw_player()
 	end
 	print(c,lx,ly,8)
 	print(combo,lx,ly,7)
-	
-	--print("level:"..level,40,2,7)
+end
+
+function draw_fruit()
+	--fruit
+	for t in all(fruits) do
+		circfill(t.x+4,t.y+4,2,12)
+		rectfill(t.x+3,t.y+3,t.x+5,t.y+5,9)
+		pset(t.x+3,t.y+3,7)
+		fire(t.x+5,t.y+5,0,-0.5,2,3,f3c)
+	end
+	--fruitlet
+	for fl in all(fruitlet) do
+		spr(get_frame({11,12,13},2),fl.x,fl.y)
+		fire(fl.x+3,fl.y+3,0,-1,1,2,f1c)
+	end
 end
 -->8
 --fruit
@@ -310,31 +321,88 @@ function fill_fruit(_x,_sdir,_amt,_typ)
  end	
 end
 
-function fruit_collides(fruit)
+function bucket_collides(fruit)
 	pbl=p_x+pc_off[1]
 	pbr=p_x+pc_off[2]
 	pbb=p_y+pc_off[3]
 	pbt=p_y+pc_off[4]
-	tbl=fruit.x+3
-	tbr=fruit.x+5
-	tx={tbl,tbr}
+	fbl=fruit.x+3
+	fbr=fruit.x+5
+	tx={fbl,fbr}
 	
 	tbt=fruit.y+3
 	tbb=fruit.y+5
 	
 	ty={tbt,tbb}
 
-	t_c=false--fruit collision
+	local collides=false
 	for i=1,2 do
 		if tx[i]<pbr and tx[i]>pbl then
 			for j=1,2 do
 				if ty[j]>pbt and ty[j]<pbb then
-					t_c=true
+					collides=true
 				end
 			end
 		end
 	end
-	return t_c
+	
+	return collides
+end
+
+function fruit_update()
+	if prvw then
+		_dot_fn()
+		--else start the delay
+	else
+		for fruit in all(fruits) do
+			if fruit.dly >0 then
+				fruit.dly-=1
+			else
+				if fruit.typ==3 or fruit.typ==4 then
+						fruit.tmr=min(fruit.tmr+0.02,1)
+						fruit.x,fruit.y=get_pattern(fruit)
+				else
+					fruit.y+=t_grav
+					fruit.x=get_pattern(fruit)
+				end
+			end
+			--fruit captured
+			if bucket_collides(fruit) then
+				score_intensity=0.5
+				mult_up+=1
+				if mult_up > 9 then
+					mult_up=0
+					mult+=1
+				end
+				combo+=1*mult
+				
+				if mult >4 then
+					mult_sfx=7
+				elseif mult>1 then
+					mult_sfx=6
+				end
+				del(fruits,fruit)
+				tf_tmr=0	
+				sfx(mult_sfx)
+			end
+
+			--fruit survived
+			if fruit.y>t_ybnd
+			or fruit.y<=t_uybnd
+			then
+				del(fruits,fruit)
+				mult=1
+				mult_up=0
+				mult_sfx=1
+				sfx(0)
+			end
+		end		
+		--got all fruit
+		if #fruits==0 then
+			level+=1
+			load_fruit()
+		end
+	end
 end
 
 function init_dots()
@@ -378,65 +446,6 @@ function finish_dots()
 		_dot_fn=init_dots
 	end
 end
-
-
-function fruit_update()
-	if prvw then
-		_dot_fn()
-		--else start the delay
-	else
-		for fruit in all(fruits) do
-			if fruit.dly >0 then
-				fruit.dly-=1
-			else
-				if fruit.typ==3 or fruit.typ==4 then
-						fruit.tmr=min(fruit.tmr+0.02,1)
-						fruit.x,fruit.y=get_pattern(fruit)
-				else
-					fruit.y+=t_grav
-					fruit.x=get_pattern(fruit)
-				end
-			end
-			--fruit captured
-			if fruit_collides(fruit) then
-				score_intensity=0.5
-				mult_up+=1
-				if mult_up > 9 then
-					mult_up=0
-					mult+=1
-				end
-				combo+=1*mult
-				
-				if mult >4 then
-					mult_sfx=7
-				elseif mult>1 then
-					mult_sfx=6
-				end
-				del(fruits,fruit)
-				tf_tmr=0	
-				sfx(mult_sfx)
-			end
-
-			--fruit survived
-			if fruit.y>t_ybnd
-			or fruit.y<=t_uybnd
-			then
-				del(fruits,fruit)
-				mult=1
-				mult_up=0
-				mult_sfx=1
-				sfx(0)
-			end
-		end		
-		--got all fruit
-		if #fruits==0 then
-			level+=1
-			load_fruit()
-		end
-	end
-end
-
-
 
 function get_pattern(_t)
 	local _typ=_t.typ
@@ -493,35 +502,55 @@ function cbc(t,x1,y1,x2,y2,x3,y3,x4,y4)
 end
 
 -->8
---starfield
-function starfield()
-	for i=1,#starx do
-		local scol=6
-		
-		if starspd[i] < 1 then
-			scol=1
-		elseif starspd[i] < 1.5 then
-			scol=13
+--fruitlets
+function init_fruitlet()
+	fl_amt=5
+	fruitlet={}
+	for i=1,fl_amt do 
+		generate_fruitlet(i)
+	end
+	debug[2]=#fruitlet
+
+end
+
+function generate_fruitlet(i)
+	local fl={
+ 		x=rnd(120)+8,
+ 		y=-10,
+ 		tmr=0,
+ 		dly=8*i,--delay
+ 		spd=flr(2+rnd(2))
+ }
+ add(fruitlet,fl)
+end
+
+function update_fruitlet()
+	for fl in all(fruitlet) do
+		if fl.dly >0 then
+				fl.dly-=1
+		else		
+					fl.y+=fl.spd
 		end
-		
-		if starspd[i] <= 1.5 then
-			pset(starx[i],stary[i],scol)
-			else
-			line(starx[i],stary[i],starx[i],stary[i]+1,scol)
+			--fruit captured
+		if bucket_collides(fl) then
+			combo+=1*mult
+				
+			del(fruitlet,fl)
+			generate_fruitlet(1)
+			tf_tmr=0	
+			sfx(9)
 		end
-		
+
+		--fruit survived
+		if fl.y>t_ybnd then
+			del(fruitlet,fl)
+			generate_fruitlet(1)
+		end
 	end
 end
 
-function animatestars()
-	for i=1,#stary do
-		local sy=stary[i]
-		sy+=starspd[i]
-		if sy>128 then
-			sy-=128
-		end
-		stary[i]=sy
-	end
+function flr_rnd(start,rng)
+	return flr(rnd(rng)+start)
 end
 -->8
 --tools
@@ -669,6 +698,37 @@ function fire(x,y,dx,dy,r,l,c_table)
 end
 
 
+-->8
+--starfield
+function starfield()
+	for i=1,#starx do
+		local scol=6
+		
+		if starspd[i] < 1 then
+			scol=1
+		elseif starspd[i] < 1.5 then
+			scol=13
+		end
+		
+		if starspd[i] <= 1.5 then
+			pset(starx[i],stary[i],scol)
+			else
+			line(starx[i],stary[i],starx[i],stary[i]+1,scol)
+		end
+		
+	end
+end
+
+function animatestars()
+	for i=1,#stary do
+		local sy=stary[i]
+		sy+=starspd[i]
+		if sy>128 then
+			sy-=128
+		end
+		stary[i]=sy
+	end
+end
 __gfx__
 0000000000000000000000000d0000d00d000d000007700000c77c000007700000c77c0000000000000000000000000000000000000000000000000000000000
 00000000000d00000000d000056006500560650000000000000cc000000cc00000c77c0000000000000000000000000000000000000000000000000000000000
@@ -711,15 +771,15 @@ __gfx__
 00222200001111000099990000333300002222000044440000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
 0001000029050290502805027050270501f0501d0501c0501b0503105018050170501605015050140501305012050110501c050100500e0500d0500b0500a0500905007050060500505005050040500305003050
-00010000080500a0500d0502a050140501c0503205025050000002c05028050300502305034050360503905015050100501005010050100500000000000000000000000000000000000000000000000000000000
+49010000080500a0500d0502a050140501c0503205025050000002c05028050300502305034050360503905015050100501005010050100500000000000000000000000000000000000000000000000000000000
 930100003065031650316501460001600016000160000600006000060000600006000360000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600
 4b0100000665007650076500c6500e650106501265013650176501a6501c6501e6502165024650286502a6002c6002c6002c6002d6002d6002e60030600306003060030600306003160031600000000000000000
 051000000005500055000050000500055000550000500005000550005500005000050005500055000050000500055000550000500005000550005500005000050005500055000050000500055000550000500005
 051000000000000000000030000300053000000000300003000000000000000000000005300000000000000300000000000000000000000530000000000000000000000000000000000000053000000000000003
-0001000008050370501b0501c0503805021050210503605032050230502f0502f050190501805018050300502d050250502d0502d050300503505000000000000000000000000000000000000000000000000000
-010100001405016050190503605020050280503e050310503000038050340503c0502f050340503605039050210501c0501c0501c0501c0500000000000000000000000000000000000000000000000000000000
+9101000008050370501b0501c0503805021050210503605032050230502f0502f050190501805018050300502d050250502d0502d050300503505000000000000000000000000000000000000000000000000000
+900100001405116051190513605120051280513e05131051300012600116051170511b0511f0512305126051290512c051300513105139001380013a0513a0013d00100001000010000100001000010000100001
 01200000233222332223322233222632228322283222832228322283222632226322263222632226322263222632226322233221f3221f3221f3221f3221f3221c3221c3221c3221c3221f3221f3221f3221f322
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+9001000038051370013700135051330613506135061350512100135001330012e001230012200122001230012400126001280012f00137001380013a0013a0013d00100001000010000100001000010000100001
 00010000190500e0501005014050160503705037050300503805038050300503805031050380503805032050380503405039050390503a0500000000000000000000000000000000000000000000000000000000
 __music__
 01 04454344
