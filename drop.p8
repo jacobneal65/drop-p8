@@ -248,7 +248,9 @@ function draw_fruit()
 	end
 	--fruitlet
 	for fl in all(fruitlet) do
-		spr(get_frame({11,12,13},2),fl.x,fl.y)
+		local fls={11,12,13}
+		if (fl.sz==2) fls={44,45,46,47}
+		spr(get_frame(fls,2),fl.x,fl.y)
 		fire(fl.x+3,fl.y+3,0,-1,1,2,f1c)
 	end
 end
@@ -509,8 +511,6 @@ function init_fruitlet()
 	for i=1,fl_amt do 
 		generate_fruitlet(i)
 	end
-	debug[2]=#fruitlet
-
 end
 
 function generate_fruitlet(i)
@@ -519,8 +519,13 @@ function generate_fruitlet(i)
  		y=-10,
  		tmr=0,
  		dly=8*i,--delay
- 		spd=flr(2+rnd(2))
+ 		spd=f_rnd(2)+1,
+ 		sz=f_rnd(2)+1
  }
+ add(debug,f_rnd(2))
+ if fl.sz>1 then
+ 	
+ end
  add(fruitlet,fl)
 end
 
@@ -557,7 +562,10 @@ end
 function get_frame(ani,spd)
  return ani[flr(t/spd)%#ani+1]
 end 
-
+--i=2 gives num between 0,1
+function f_rnd(_i)
+	return flr(rnd(_i))
+end
 
 function debug_bounds()
 	--l,r,b,t
