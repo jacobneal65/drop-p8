@@ -34,12 +34,20 @@ function _init()
 	grav=2
 	
 	--point and level
+	levels={
+		{--ptrn,sx,end_x,bez_arr
+			{0,8,120},{}
+		},--l1
+		{}--l2
+	}
+	total_blue={}
 	level=1
 	wave=1
 	
-	
 	points=0--points
-	bpoints=0--blue points
+	b_points=0--blue points
+	b_amnt=0--#blue in wave
+	
 	fuel=120--yellow points
 	mult=1
 	mult_up=0
@@ -244,14 +252,22 @@ function init_fruit()
 	t_grav=2
 	prvw=true
 	prvw_tmr=0
-	
-	--get level
-		--level has waves
-		
-	--fiill waves for level
+	--fill first array with fruit
+	fill_fruit_wave()
 	
 	--calculate total blue points
-		--add this to level
+	local wvs = levels[level]
+	b_amnt=0
+	for wv in all(waves) do
+		local amnt=10
+		local _t=wv[1]
+		if _t==4 then
+			amnt=5
+		elseif _t==5 then
+			amnt=20
+		end
+		b_amnt+=amnt
+	end
 	--go through waves for level	
 	
 	
@@ -290,7 +306,41 @@ function init_fruit()
 	end
 end
 
-function fill_fruit(_x,_sdir,_amt,_typ)
+--fill fruit array with current wave
+
+function fill_fruit_wave()
+	local wv=levels[level][wave]
+	local _p=wv[1]--pattern
+	local _x=rnd_rng(wv[2],wv[3])--(sx,ex)
+	local bez_arr=wv[4]--bez_array
+	local _amt=10
+	local _spd=2
+	
+	if _p==0 then--l_zig
+		--(_x,_amt,_typ)
+		fill_fruit(_x,10,0)
+	elseif _p==1 then--r_zig
+		fill_fruit(_x,10,1)
+	elseif _p==2 then--cross
+		fill_fruit(_x,10,2)
+	elseif _p==3 then--line
+		fill_fruit(0,5,3)
+	elseif _p==4 then--dbl zig
+	fill_fruit(_x,10,0)
+	fill_fruit(_x,10,1)
+	elseif _p==5 then--q_bez
+		bx2,by2=-40,32
+		bx3,by3=64,140
+		fill_fruit(_x,10,5)
+	elseif _p==6 then--c_bez
+		bx2,by2=180,120
+		bx3,by3=-60,120
+		bx4,by4=64,t_uybnd
+		fill_fruit(64,1,10,6)
+	end
+end
+
+function fill_fruit(_x,_amt,_typ)
 	prvw_typ=_typ
 	for i=1,_amt do
 		local _i,nx=i,_x
@@ -309,7 +359,6 @@ function fill_fruit(_x,_sdir,_amt,_typ)
  		i=i,
  		tmr=0,
  		dly=8*_i,--delay
- 		dir=_sdir,
  		typ=_typ,
  	}
  	add(fruits,fruit)
@@ -458,10 +507,12 @@ function get_pattern(_t)
 end
 
 function zig_p(_t)
+	local dir=2
+	if (_t.typ==1) dir=-2
 	if _t.y >= 0 and _t.y < 50 then
-		_t.x+=_t.dir
+		_t.x+=dir
 	elseif _t.y >=50 then
-		_t.x-=_t.dir
+		_t.x-=dir
 	end
 	return _t.x
 end
@@ -554,6 +605,11 @@ end
 --give 1
 function f_rnd(_i)
 	return flr(rnd(_i))
+end
+--gives random number between
+-- _s and _e
+function rnd_rng(_s,_e)
+	return f_rnd(_e-_s+1)+_s
 end
 
 function debug_bounds()
