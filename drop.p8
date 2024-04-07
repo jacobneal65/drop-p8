@@ -152,7 +152,7 @@ function upd_player()
 	if (p_x < 0) p_x=1
 	if (p_y > 120) p_y=120
 	if (p_y < 16) p_y=17
-	transfer_points()
+	--transfer_points()
 	--fruit
 	update_fruit()
 	update_fruitlet()
@@ -497,7 +497,7 @@ end
 
 function generate_fruitlet(i)
 	local fl={
- 		x=rnd(120)+8,
+ 		x=rnd(112)+8,
  		y=-10,
  		tmr=0,
  		dly=8*i,--delay
