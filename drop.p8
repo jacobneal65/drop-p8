@@ -7,7 +7,8 @@ __lua__
 --by olivander65
 function _init()
 	--music(1)
-	
+	level=2
+	wave=3
 	t=0
 	debug={""}
 	effects={}
@@ -20,10 +21,9 @@ function _init()
 	--player
 	p_x=64
 	p_y=100
-	p_hspd=2
-	p_vspd=2
+	p_spd=2
 	--player offset l,r,b,t
-	pc_off={-1,8,1,-7}
+	p_o={-1,8,1,-7}
 	
 	fruits={}
 	fruitlet={}
@@ -33,16 +33,16 @@ function _init()
 	t_grav=2
 	grav=2
 	
-	--point and level
+	b_arr={}--bezier array
+	--pattern,sx,end_x,bez_arr
 	levels={
-		{--ptrn,sx,end_x,bez_arr
-			{0,8,120},{}
-		},--l1
-		{}--l2
+		{{0,8,64},{1,64,120},{0,8,64},{1,64,120},{0,8,64},{1,64,120},{0,8,64}},
+		{{2,64,64},{3,0,10},{4,48,80},{5,64,64,{64,-10,-40,32,64,140}},{5,64,64,{64,-10,168,32,64,140}}},
+
+
 	}
-	total_blue={}
-	level=1
-	wave=1
+	
+	total_blue=0
 	
 	points=0--points
 	b_points=0--blue points
@@ -127,30 +127,24 @@ end
 function upd_player()
 	fuel-=0.3
 	if fuel <=0 then
-		debug[1]="game_over"
+		debug[1]="out of fuel"
 	end
-	p_spr=3
-	b_spr=1
-	s_spr=19
+	p_spr,b_spr,s_spr=3,1,19
 	p_flp=false
-	--plyr movment
+
 	--left/right
 	if btn(0) then 
-	 p_x-=p_hspd 
-	 p_spr=4
-	 b_spr=17
-	 s_spr=21
+	 p_x-=p_spd 
+	 p_spr,b_spr,s_spr=4,17,21
 	end
 	if btn(1) then
-	 p_x+=p_hspd 
-	 p_spr=4 
-	 b_spr=17
-	 s_spr=20
+	 p_x+=p_spd 
+	 p_spr,b_spr,s_spr=4,17,21
 	 p_flp=true
 	end
 	--up/down
-	if (btn(2)) p_y-=p_vspd
-	if (btn(3)) p_y+=p_vspd
+	if (btn(2)) p_y-=p_spd
+	if (btn(3)) p_y+=p_spd
 	
 	--bounds
 	if (p_x > 114) p_x=114
@@ -206,8 +200,10 @@ function drw_player()
 	spr(b_spr,p_x-4,p_y-8,2,1,p_flp)
 
 	--flame
-	f_sprs={5,6,7,6,5}
-	spr(get_frame(f_sprs,1),t_px,t_py+8)
+	if fuel >0 then
+			f_sprs={5,6,7,6,5}
+			spr(get_frame(f_sprs,1),t_px,t_py+8)
+		end
 end
 
 function drw_points()
@@ -248,94 +244,82 @@ end
 --load fruit is called at
 --start and each new level
 function init_fruit()
-	t_tmr=0
-	t_grav=2
-	prvw=true
-	prvw_tmr=0
 	--fill first array with fruit
 	fill_fruit_wave()
 	
 	--calculate total blue points
 	local wvs = levels[level]
-	b_amnt=0
+	total_blue=0
 	for wv in all(waves) do
-		local amnt=10
-		local _t=wv[1]
-		if _t==4 then
-			amnt=5
-		elseif _t==5 then
-			amnt=20
+		local amt,_typ=10,wv[1]
+		if _typ==4 then
+			amt=5
+		elseif _typ==5 then
+			amt=20
 		end
-		b_amnt+=amnt
+		total_blue+=amnt
 	end
-	--go through waves for level	
-	
-	
-	
-	if level==1 then	
-		fill_fruit(64,2,10,0)--zig
-	elseif level==2 then
-		fill_fruit(64,-2,10,0)--zig
-	elseif level==3 then
-		fill_fruit(0,1,10,1)--cross
-	elseif level==4 then
-		fill_fruit(0,1,5,2)--line
-	elseif level==5 then
-		fill_fruit(88,-2,10,0)
-		fill_fruit(88,2,10,0)--dzig
-	elseif level==6 then
-		fill_fruit(32,2,10,0)--dzig
-		fill_fruit(32,-2,10,0)
-	elseif level==7 then
-		bx2,by2=-40,32
-		bx3,by3=64,140
-		fill_fruit(64,1,10,3)--qbezier
-	elseif level==8 then
-		bx2,by2=168,32
-		bx3,by3=64,140
-		fill_fruit(64,1,10,3)--qbezier
-	elseif level==9 then
-		bx2,by2=64,150
-		bx3,by3=120,t_uybnd
-		fill_fruit(8,1,10,3)--qbezier
-	elseif level==10 then
-		bx2,by2=180,120
-		bx3,by3=-60,120
-		bx4,by4=64,t_uybnd
-		fill_fruit(64,1,10,4)--cbezier
-	end
+--	if level==1 then	
+--		fill_fruit(64,2,10,0)--zig
+--	elseif level==2 then
+--		fill_fruit(64,-2,10,0)--zig
+--	elseif level==3 then
+--		fill_fruit(0,1,10,1)--cross
+--	elseif level==4 then
+--		fill_fruit(0,1,5,2)--line
+--	elseif level==5 then
+--		fill_fruit(88,-2,10,0)
+--		fill_fruit(88,2,10,0)--dzig
+--	elseif level==6 then
+--		fill_fruit(32,2,10,0)--dzig
+--		fill_fruit(32,-2,10,0)
+--	elseif level==7 then
+--		bx2,by2=-40,32
+--		bx3,by3=64,140
+--		fill_fruit(64,1,10,3)--qbezier
+--	elseif level==8 then
+--		bx2,by2=168,32
+--		bx3,by3=64,140
+--		fill_fruit(64,1,10,3)--qbezier
+--	elseif level==9 then
+--		bx2,by2=64,150
+--		bx3,by3=120,t_uybnd
+--		fill_fruit(8,1,10,3)--qbezier
+--	elseif level==10 then
+--		bx2,by2=180,120
+--		bx3,by3=-60,120
+--		bx4,by4=64,t_uybnd
+--		fill_fruit(64,1,10,4)--cbezier
+--	end
 end
-
---fill fruit array with current wave
-
 function fill_fruit_wave()
 	local wv=levels[level][wave]
-	local _p=wv[1]--pattern
-	local _x=rnd_rng(wv[2],wv[3])--(sx,ex)
-	local bez_arr=wv[4]--bez_array
-	local _amt=10
-	local _spd=2
+
+	t_grav,t_tmr=2,0
+	prvw,prvw_tmr=true,0
 	
-	if _p==0 then--l_zig
+	local _x=rnd_rng(wv[2],wv[3])
+	b_arr=wv[4]--bezier array
+	local _typ=wv[1]
+	
+	if _typ==0 then--l_zig
 		--(_x,_amt,_typ)
 		fill_fruit(_x,10,0)
-	elseif _p==1 then--r_zig
+	elseif _typ==1 then--r_zig
 		fill_fruit(_x,10,1)
-	elseif _p==2 then--cross
+	elseif _typ==2 then--cross
 		fill_fruit(_x,10,2)
-	elseif _p==3 then--line
+	elseif _typ==3 then--line
 		fill_fruit(0,5,3)
-	elseif _p==4 then--dbl zig
-	fill_fruit(_x,10,0)
-	fill_fruit(_x,10,1)
-	elseif _p==5 then--q_bez
-		bx2,by2=-40,32
-		bx3,by3=64,140
+	elseif _typ==4 then--dbl zig
+		fill_fruit(_x,10,0)
+		fill_fruit(_x,10,1)
+	elseif _typ==5 then--q_bez
 		fill_fruit(_x,10,5)
-	elseif _p==6 then--c_bez
-		bx2,by2=180,120
-		bx3,by3=-60,120
-		bx4,by4=64,t_uybnd
+	elseif _typ==6 then--c_bez
+--		bx2,by2=180,120
+--		bx3,by3=-60,120
+--		bx4,by4=64,t_uybnd
 		fill_fruit(64,1,10,6)
 	end
 end
@@ -344,16 +328,17 @@ function fill_fruit(_x,_amt,_typ)
 	prvw_typ=_typ
 	for i=1,_amt do
 		local _i,nx=i,_x
-		if _typ==1 and i%2==0 then--cros
+		--cros
+		if _typ==2 and i%2==0 then
 			_i=i-1
 			nx=118
-		elseif _typ==2 then--line
+		--line
+		elseif _typ==3 then
 			nx=20*i
 			_i=1
 		end
  	fruit={
  		x=nx,
- 		bx=nx,--base x
  		y=-10,
  		by=-10,
  		i=i,
@@ -366,10 +351,12 @@ function fill_fruit(_x,_amt,_typ)
 end
 
 function bucket_collides(fruit)
-	pbl=p_x+pc_off[1]
-	pbr=p_x+pc_off[2]
-	pbb=p_y+pc_off[3]
-	pbt=p_y+pc_off[4]
+	--player bound
+	pbl=p_x+p_o[1]
+	pbr=p_x+p_o[2]
+	pbb=p_y+p_o[3]
+	pbt=p_y+p_o[4]
+	--fruit bound
 	fbl=fruit.x+3
 	fbr=fruit.x+5
 	tx={fbl,fbr}
@@ -388,7 +375,6 @@ function bucket_collides(fruit)
 			end
 		end
 	end
-	
 	return collides
 end
 
@@ -401,7 +387,7 @@ function update_fruit()
 			if fruit.dly >0 then
 				fruit.dly-=1
 			else
-				if fruit.typ==3 or fruit.typ==4 then
+				if fruit.typ==5 or fruit.typ==6 then
 						fruit.tmr=min(fruit.tmr+0.02,1)
 						fruit.x,fruit.y=get_pattern(fruit)
 				else
@@ -440,8 +426,16 @@ function update_fruit()
 		end		
 		--got all fruit
 		if #fruits==0 then
-			level+=1
-			init_fruit()
+			wave+=1
+			if wave > #levels[level] then
+				wave = 1
+				level += 1
+			end
+			if level < #levels+1 then
+				fill_fruit_wave()
+			else
+				debug[2]="victory"
+			end
 		end
 	end
 end
@@ -460,7 +454,7 @@ function update_dots()
 					cd.dly-=1
 			else
 				local _typ = cd.typ
-				if _typ==3 or _typ==4 then
+				if _typ==5 or _typ==6 then
 						cd.tmr=min(cd.tmr+0.02,1)
 						cd.x,cd.y=get_pattern(cd)
 				else
@@ -490,19 +484,20 @@ end
 
 function get_pattern(_t)
 	local _typ=_t.typ
-	if _typ==0 then--zig
+	if _typ==0 or _typ==1 then--zig
 		return zig_p(_t)
-	elseif _typ==1 then--cros
+	elseif _typ==2 then--cros
 		return cros_p(_t)
-	elseif _typ==2 then--line
+	elseif _typ==3 then--line
 		if _t.y>100 then
 			t_grav=-1
 		end
 		return _t.x
-	elseif _typ==3 then--qbezier
-		return qbc(_t.tmr,_t.bx,_t.by,bx2,by2,bx3,by3)
-	elseif _typ==4 then--cbezier
-		return cbc(_t.tmr,_t.bx,_t.by,bx2,by2,bx3,by3,bx4,by4)
+	elseif _typ==5 then--qbezier
+		local b = b_arr
+		return qbc(_t.tmr,b[1],b[2],b[3],b[4],b[5],b[6])
+	elseif _typ==6 then--cbezier
+		return cbc(_t.tmr,b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8])
 	end	
 end
 
@@ -614,10 +609,10 @@ end
 
 function debug_bounds()
 	--l,r,b,t
-	local pl=p_x+pc_off[1]--l
-	local pr=p_x+pc_off[2]--r
-	local pb=p_y+pc_off[3]--b
-	local pt=p_y+pc_off[4]--t
+	local pl=p_x+p_o[1]--l
+	local pr=p_x+p_o[2]--r
+	local pb=p_y+p_o[3]--b
+	local pt=p_y+p_o[4]--t
 	pset(pl,pb,8)--bl
 	pset(pr,pb,8)--br
 	pset(pl,pt,8)--tl
