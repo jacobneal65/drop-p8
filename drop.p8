@@ -49,7 +49,6 @@ function _init()
 	fr_spr=36
 	fr_tmr=0
 	
-	
 	fuel=120--red tank
 	fl_ani=false
 	fl_spr=52
@@ -130,7 +129,7 @@ end
 --player
 
 function upd_player()
-	fuel-=0.3
+	fuel-=0.2
 	if fuel <=0 then
 		debug[1]="out of fuel"
 	end
@@ -219,9 +218,11 @@ function drw_player()
 
 	--flame
 	if fuel >0 then
-			f_sprs={5,6,7,6,5}
-			spr(get_frame(f_sprs,1),t_px,t_py+8)
-		end
+		f_sprs={5,6,7,6,5}
+		spr(get_frame(f_sprs,1),t_px,t_py+8)
+	end
+	local _lvl="level: "..level
+	print(_lvl,hcenter(_lvl),2,7)
 end
 
 function drw_points()
@@ -707,7 +708,9 @@ function shake_field(_x,_y,_intensity)
 	return rx,ry,_intensity
 end
 
-
+function hcenter(s)
+	return 64-#s*2
+end
 
 -->8
 --particles
