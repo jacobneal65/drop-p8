@@ -6,9 +6,9 @@ __lua__
 --sun chaser
 --by olivander65
 function _init()
-	--music(1)
+	music(1)
 	level=1
-	wave=1
+	wave=7
 	t=0
 	debug={""}
 	effects={}
@@ -81,25 +81,14 @@ function _init()
 	shake_control = 2
 	cam_x,cam_y=0,0
 	
- init_fruit()
+ init_fruit_wave()
  init_fruitlet()
  
- _upd=upd_player
+ _upd=upd_level
 	_drw=drw_level
 end
 
-function transfer_points()
-		if tf_tmr>60 then
-				if combo>0 then
-					combo-=1
-					points+=1
-				else
-				 tf_tmr=0
-				end
-		else
-			tf_tmr+=1
-		end
-end
+
 
 function _update()
 	t+=1
@@ -126,10 +115,11 @@ function _draw()
 end
 
 -->8
---player
+--level
 
-function upd_player()
+function upd_level()
 	fuel-=0.2
+	fuel=max(fuel,0)
 	if fuel <=0 then
 		debug[1]="out of fuel"
 	end
@@ -171,13 +161,13 @@ end
 function drw_dots()
 	--dots line
 	for d in all(dots) do
-		pset(d.x+4,d.y+4,2)
+		pset(d.x+4,d.y+4,12)
 		fire(d.x+5,d.y+5,0,-0.5,1,2,f2c)
 	end
 end
 
 function drw_player()
-	--red tank
+	--red tank insides
  tank=flr(min(fuel,100)/100*24)
  ty=0
 	for i=1,tank do
@@ -189,7 +179,7 @@ function drw_player()
 		pset(p_x+8+_i,p_y+ty+1,_clr)
 	end
 	
-	--blue tank
+	--blue tank insides
 	blue_tnk=flr(min(b_points,t_blue)/t_blue*24)
  ty=0
 	for i=1,blue_tnk do
@@ -199,7 +189,7 @@ function drw_player()
 		end
 		--clrs = 3 and 12
 		local _clr = min(1,i%3)*9+3
-		pset(p_x-7+_i,p_y+ty+1,_clr)
+		pset(p_x-5+_i,p_y+ty+1,_clr)
 	end
 
 	--player
@@ -207,11 +197,11 @@ function drw_player()
  local t_py=flr(p_y)
 	spr(p_spr,p_x,p_y,1,1,p_flp)
 	--red tank
-	spr(s_spr,p_x+7,p_y+1,1,1)
+	spr(s_spr,p_x+7,p_y+1,1,1,p_flp)
 	spr(fl_spr,p_x+7,p_y-7,1,1)
 	--blue tank
-	spr(s_spr,p_x-8,p_y+1,1,1)
-	spr(fr_spr,p_x-8,p_y-7,1,1)
+	spr(s_spr,p_x-6,p_y+1,1,1,p_flp)
+	spr(fr_spr,p_x-7,p_y-7,1,1)
 	
 	--catching bucket
 	spr(b_spr,p_x-4,p_y-8,2,1,p_flp)
@@ -260,59 +250,7 @@ function drw_fruit()
 end
 -->8
 --fruit
---load fruit is called at
---start and each new level
-function init_fruit()
-	--fill first array with fruit
-	fill_fruit_wave()
-	
-	--calculate total blue points
-	local wvs = levels[level]
-	t_blue=0
-	for wv in all(wvs) do
-		local amt,_typ=10,wv[1]
-		if _typ==4 then
-			amt=5
-		elseif _typ==5 then
-			amt=20
-		end
-		t_blue+=amt
-	end
-	
---	if level==1 then	
---		fill_fruit(64,2,10,0)--zig
---	elseif level==2 then
---		fill_fruit(64,-2,10,0)--zig
---	elseif level==3 then
---		fill_fruit(0,1,10,1)--cross
---	elseif level==4 then
---		fill_fruit(0,1,5,2)--line
---	elseif level==5 then
---		fill_fruit(88,-2,10,0)
---		fill_fruit(88,2,10,0)--dzig
---	elseif level==6 then
---		fill_fruit(32,2,10,0)--dzig
---		fill_fruit(32,-2,10,0)
---	elseif level==7 then
---		bx2,by2=-40,32
---		bx3,by3=64,140
---		fill_fruit(64,1,10,3)--qbezier
---	elseif level==8 then
---		bx2,by2=168,32
---		bx3,by3=64,140
---		fill_fruit(64,1,10,3)--qbezier
---	elseif level==9 then
---		bx2,by2=64,150
---		bx3,by3=120,t_uybnd
---		fill_fruit(8,1,10,3)--qbezier
---	elseif level==10 then
---		bx2,by2=180,120
---		bx3,by3=-60,120
---		bx4,by4=64,t_uybnd
---		fill_fruit(64,1,10,4)--cbezier
---	end
-end
-function fill_fruit_wave()
+function init_fruit_wave()
 	local wv=levels[level][wave]
 
 	t_grav,t_tmr=2,0
@@ -342,6 +280,20 @@ function fill_fruit_wave()
 --		bx4,by4=64,t_uybnd
 		fill_fruit(64,1,10,6)
 	end
+	
+	--calculate total blue points
+	local wvs = levels[level]
+	t_blue=0
+	for wv in all(wvs) do
+		local amt,_typ=10,wv[1]
+		if _typ==4 then
+			amt=5
+		elseif _typ==5 then
+			amt=20
+		end
+		t_blue+=amt
+	end
+	
 end
 
 function fill_fruit(_x,_amt,_typ)
@@ -463,18 +415,17 @@ function update_fruit()
 		if #fruits==0 then
 			fr_spr=36
 			wave+=1
+			--no more waves in level
 			if wave > #levels[level] then
 				wave=1
 				level+=1
+				_upd=init_eol--end of lvl
 			end
-			if level < #levels+1 then
-				fill_fruit_wave()
-			else
-				debug[2]="victory"
-			end
+			
 		end
 	end
 end
+
 
 function init_dots()
 	dots={}
@@ -637,82 +588,90 @@ end
 
 
 -->8
---tools
-function get_frame(ani,spd)
- return ani[flr(t/spd)%#ani+1]
-end 
---i=2 gives num between 0,1
---rnd never gives the limit
---value. rnd(1) will never
---give 1
-function f_rnd(_i)
-	return flr(rnd(_i))
-end
---gives random number between
--- _s and _e
-function rnd_rng(_s,_e)
-	return f_rnd(_e-_s+1)+_s
+--end of level
+function init_eol()
+	eol_t=0
+	mv_plyr=true
+	fruitlet={}
+	_upd=upd_eol
+	--_drw=drw_eol
 end
 
-function debug_bounds()
-	--l,r,b,t
-	local pl=p_x+p_o[1]--l
-	local pr=p_x+p_o[2]--r
-	local pb=p_y+p_o[3]--b
-	local pt=p_y+p_o[4]--t
-	pset(pl,pb,8)--bl
-	pset(pr,pb,8)--br
-	pset(pl,pt,8)--tl
-	pset(pr,pt,8)--tr
+function upd_eol()
+	--lerp the player to middle
+	if mv_plyr then
+		p_lerp()
+	else
 		
-	for fruit in all(fruits) do
-		pset(fruit.x+4,fruit.y+4,8)
 	end
-		
+--	if level < #levels+1 then
+-- init_fruitlet()
+--		init_fruit_wave()
+--	else
+--		debug[2]="no more levels"
+--	end
+	
 end
 
---copy table
-function ct(table)
-	_nt={}
-	for key,value in pairs(table) do
-		_nt[key]=value
+function transfer_points()
+		if tf_tmr>60 then
+				if combo>0 then
+					combo-=1
+					points+=1
+				else
+				 tf_tmr=0
+				end
+		else
+			tf_tmr+=1
+		end
+end
+
+function drw_eol()
+	
+end
+
+function p_lerp()
+	eol_t=min(eol_t+0.1,1)
+	p_x=lerp(p_x,56,eol_t)
+	p_y=lerp(p_y,64,eol_t)
+	if eol_t==1 then
+		mv_plyr=false
 	end
-	return _nt
 end
-
-
-function shake()
-	local shake_x=rnd(intensity) - (intensity /2)
-	local shake_y=rnd(intensity) - (intensity /2)
-  
-	--offset the camera
-	camera( shake_x + cam_x, shake_y + cam_y)
-  
-	--ease shake and return to normal
-	intensity *= .9
-	if intensity < .3 then 
-		intensity = 0 
-		camera(cam_x,cam_y)
-	end
-end
-
-function shake_field(_x,_y,_intensity)
-	local shk_x=rnd(_intensity) - (_intensity /2)
-	local shk_y=rnd(_intensity) - (_intensity /2)
-	local rx,ry=shk_x+_x,shk_y+_y
-	--ease shake and return to normal
-	_intensity *= .9
-	if _intensity < .3 then 
-		return _x,_y,0
-	end
-	return rx,ry,_intensity
-end
-
-function hcenter(s)
-	return 64-#s*2
-end
-
 -->8
+--particles
+
+--starfield
+function starfield()
+	for i=1,#starx do
+		local scol=6
+		
+		if starspd[i] < 1 then
+			scol=1
+		elseif starspd[i] < 1.5 then
+			scol=13
+		end
+		
+		if starspd[i] <= 1.5 then
+			pset(starx[i],stary[i],scol)
+			else
+			line(starx[i],stary[i],starx[i],stary[i]+1,scol)
+		end
+		
+	end
+end
+
+function animatestars()
+	for i=1,#stary do
+		local sy=stary[i]
+		sy+=starspd[i]
+		if sy>128 then
+			sy-=128
+		end
+		stary[i]=sy
+	end
+end
+
 --particles
 function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table,shwave)
     local fx={
@@ -841,53 +800,101 @@ function puff(x,y,col)
 end
 
 -->8
---starfield
-function starfield()
-	for i=1,#starx do
-		local scol=6
+--tools
+function get_frame(ani,spd)
+ return ani[flr(t/spd)%#ani+1]
+end 
+--i=2 gives num between 0,1
+--rnd never gives the limit
+--value. rnd(1) will never
+--give 1
+function f_rnd(_i)
+	return flr(rnd(_i))
+end
+--gives random number between
+-- _s and _e
+function rnd_rng(_s,_e)
+	return f_rnd(_e-_s+1)+_s
+end
+
+function debug_bounds()
+	--l,r,b,t
+	local pl=p_x+p_o[1]--l
+	local pr=p_x+p_o[2]--r
+	local pb=p_y+p_o[3]--b
+	local pt=p_y+p_o[4]--t
+	pset(pl,pb,8)--bl
+	pset(pr,pb,8)--br
+	pset(pl,pt,8)--tl
+	pset(pr,pt,8)--tr
 		
-		if starspd[i] < 1 then
-			scol=1
-		elseif starspd[i] < 1.5 then
-			scol=13
-		end
+	for fruit in all(fruits) do
+		pset(fruit.x+4,fruit.y+4,8)
+	end
 		
-		if starspd[i] <= 1.5 then
-			pset(starx[i],stary[i],scol)
-			else
-			line(starx[i],stary[i],starx[i],stary[i]+1,scol)
-		end
-		
+end
+
+--copy table
+function ct(table)
+	_nt={}
+	for key,value in pairs(table) do
+		_nt[key]=value
+	end
+	return _nt
+end
+
+
+function shake()
+	local shake_x=rnd(intensity) - (intensity /2)
+	local shake_y=rnd(intensity) - (intensity /2)
+  
+	--offset the camera
+	camera( shake_x + cam_x, shake_y + cam_y)
+  
+	--ease shake and return to normal
+	intensity *= .9
+	if intensity < .3 then 
+		intensity = 0 
+		camera(cam_x,cam_y)
 	end
 end
 
-function animatestars()
-	for i=1,#stary do
-		local sy=stary[i]
-		sy+=starspd[i]
-		if sy>128 then
-			sy-=128
-		end
-		stary[i]=sy
+function shake_field(_x,_y,_intensity)
+	local shk_x=rnd(_intensity) - (_intensity /2)
+	local shk_y=rnd(_intensity) - (_intensity /2)
+	local rx,ry=shk_x+_x,shk_y+_y
+	--ease shake and return to normal
+	_intensity *= .9
+	if _intensity < .3 then 
+		return _x,_y,0
 	end
+	return rx,ry,_intensity
+end
+
+function hcenter(s)
+	return 64-#s*2
+end
+
+function lerp(a,b,t)
+	return a+(b-a)*t
 end
 __gfx__
 00000000000000000000000007007070070707000007700000c77c000007700000c77c0000000000000000000000000000000000000000000000000000000000
 00000000000d00000000d000060060600606060000000000000cc000000cc00000c77c0000000000000000000000000000000000000000000000000000000000
-00700700000560000006500006556660065666600000000000000000000cc000000cc00000000000000000000000900000090000009009000000000000000000
+007007000005d000000d500006556660065666600000000000000000000cc000000cc00000000000000000000000900000090000009009000000000000000000
 0007700000056500005650006666d666566d6667000000000000000000000000000000000000000000000000009a90000009a900000a90000000000000000000
-000770000005656666565000666d766656d766670000000000000000000000000000000000000000000000000009a900009a90000009a0000000000000000000
+00077000000565dddd565000666d766656d766670000000000000000000000000000000000000000000000000009a900009a90000009a0000000000000000000
 0070070000056556655650005665d665565d66670000000000000000000000000000000000000000000000000009000000009000009009000000000000000000
 00000000000566566566500005666650056666700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000555555550000005dd500006dd6000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000555500005550000055500000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000d0000000d000005000050050005000500050000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000000005600000650000050000500500050005000500009559000045590000455a0000455a0000955a0000a55a0000a5590000a5540000a5540000955400
-0000000000056500056500000500005005000d000d000500009999000049990000499a000049aa00009aaa0000aaaa0000aaa90000aa940000a9940000999400
-0000000000056566656500000500005005000d000d000500009669000046690000469a000049aa00009aaa0000aaaa0000aaa90000aa940000a9640000966400
-0000000000056556556500000500005005000d000d000500009999000049990000499a000049aa00009aaa0000aaaa0000aaa90000aa940000a9940000999400
-000000000005665656650000050000d00500050005000500009999000049990000499a000049aa00009aaa0000aaaa0000aaa90000aa940000a9940000999400
-00000000000055555550000000555d000055d00000d5500000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000565000000550000005500000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000d0000000d000005000500005005000050050000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000000000005d00000d50000050005000050050000500500009559000045590000455a0000455a0000955a0000a55a0000a5590000a5540000a5540000955400
+0000000000056500056500000500050000500d0000d00500009999000049990000499a000049aa00009aaa0000aaaa0000aaa90000aa940000a9940000999400
+00000000000565ddd56500000500050000500d0000d00500009669000046690000469a000049aa00009aaa0000aaaa0000aaa90000aa940000a9640000966400
+0000000000056556556500000500050000500d0000d00500009999000049990000499a000049aa00009aaa0000aaaa0000aaa90000aa940000a9940000999400
+00000000000566565665000005000d000050050000500500009999000049990000499a000049aa00009aaa0000aaaa0000aaa90000aa940000a9940000999400
+0000000000005555555000000055d0000005d000000d500000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000022000000220000c0000c00c000c00000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000288200002882000c0000c00c000c00000000000000000000000900009000000009000000009000
 00000000000000000000000000000000000000000000000000288200002882000c0000c00c000c00000044444444000009009000000900900009000000090000
@@ -925,7 +932,7 @@ __sfx__
 00010000190500e0501005014050160503705037050300503805038050300503805031050380503805032050380503405039050390503a0500000000000000000000000000000000000000000000000000000000
 __music__
 01 04454344
-01 04054344
+02 04054344
 00 04050244
 00 04050344
 00 04050244
