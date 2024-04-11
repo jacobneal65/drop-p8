@@ -634,10 +634,6 @@ function upd_eol()
 			end
 		end
 		
-		
-		
-		--fill fuel
-		--start again!
 	end
 --	if level < #levels+1 then
 -- init_fruitlet()
@@ -656,9 +652,10 @@ end
 
 function draw_mothership()
 	--draw_refuelrs()
-	spr(64,37,48+m_off,6,10)
-	fire(48,120+m_off,0,0.5,6,6,f3c)
-	fire(75,120+m_off,0,0.5,6,6,f3c)
+	local mx,my=16,32
+	spr(64,mx,my+m_off,6,10)
+	fire(mx+11,my+72+m_off,0,0.5,6,6,f3c)
+	fire(mx+39,my+72+m_off,0,0.5,6,6,f3c)
 end
 
 function draw_refuelrs()
@@ -691,8 +688,8 @@ end
 function p_lerp()
 	eol_t=min(eol_t+0.01,1)
  local _t=easeinoutovershoot(eol_t)
-	p_x=lerp(ip_x,56,_t)
-	p_y=lerp(ip_y,32,_t)
+	p_x=lerp(ip_x,70,_t)
+	p_y=lerp(ip_y,72,_t)
 	if eol_t==1 then
 		mv_plyr=false
 	end
