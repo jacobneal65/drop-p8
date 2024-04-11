@@ -1,8 +1,14 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
+<<<<<<< HEAD
 --main
 --jupiter collection
+=======
+--mains
+--comet collection
+--sun chaser
+>>>>>>> 785a1d5af7fe912190fcc1bcaa11291202362b3e
 --by olivander65
 function _init()
 	music(1)
