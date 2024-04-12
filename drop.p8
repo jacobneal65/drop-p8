@@ -17,6 +17,7 @@ function _init()
 	f3c={7,12,12,1}--blue flame
 	shwv_clrs={8,9,9,10}
 	bshv_c={7,12,12,12}
+	warp_c={7,11,11,3}
 	--player
 	p_x=64
 	p_y=100
@@ -57,6 +58,11 @@ function _init()
 	temp_points=0
 	mult_sfx=1
 	tf_tmr=0--transfer timer
+	
+	poke(0x5f34, 0x2)--circfade
+	fade_dir=0
+	fadding=false
+	fade_r=100
 	
 	--stars
 	starx={}
@@ -103,6 +109,8 @@ function _draw()
 	starfield()
 	draw_fx()
 	_drw()
+	
+	circfade()
 	
 	--debug
 	--debug_bounds()
@@ -606,8 +614,7 @@ function init_eol()
 	dock_spr=76
 	wrp_spr=86
 	w_off=-100
-	gen_tmr=0--general timer
-	ip_x,ip_y=p_x,p_y
+	init_plerp()
 	d_plyr=drw_player--draw fn
 	e_state=0
 	_upd=upd_eol
@@ -678,8 +685,7 @@ function upd_eol()
 			sfx(13)
 			if dock_spr==76 then
 				e_state=4
-				ip_x,ip_y=p_x,p_y
-				gen_tmr=0
+				init_plerp()
 			end
 		else
 		 gen_tmr+=1
@@ -694,8 +700,10 @@ function upd_eol()
 		end
 	end
 	if e_state==5 then
+		--open warp
 		w_off=0
 		wrp_spr=min(wrp_spr+2,90)
+		puff(54,24+w_off,warp_c)
 		if wrp_spr==90 then
 			e_state=6
 			d_plyr=drw_sqsh
@@ -707,14 +715,32 @@ function upd_eol()
 		if p_y==30 then
 			d_plyr=blank
 			e_state =7
+			gen_tmr=0
 		end
 	end
 	if e_state == 7 then
-		wrp_spr=max(wrp_spr-2,86)
-		if wrp_spr==86 then
+		gen_tmr=min(gen_tmr+1,10)
+		if gen_tmr==10 then
+			w_off=-40
 			e_state=8
+			init_circfade()
+			p_x,p_y=54,150
+			init_plerp()
+			d_plyr=drw_player
+		end
+	end
+	if e_state==8 and fadding == false then
+		--open warp
+		w_off=80
+		wrp_spr=min(wrp_spr+2,90)
+		puff(54,24+w_off,warp_c)
+		if wrp_spr==90 then
+			e_state=9
 			d_plyr=drw_sqsh
 		end
+	end
+	if e_state==9 then
+		--warp in
 	end
 --	if level < #levels+1 then
 -- init_fruitlet()
@@ -723,6 +749,11 @@ function upd_eol()
 --		debug[2]="no more levels"
 --	end
 	
+end
+
+function init_plerp()
+	gen_tmr=0
+	ip_x,ip_y=p_x,p_y
 end
 
 function p_lerp(ex,ey)
@@ -1029,6 +1060,36 @@ function easeoutquad(t)
 	return 1-t*t
 end
 
+function init_circfade()
+	fade_tmr=0
+	fade_dir = -1
+	fadding=true
+	fade_r=100
+end
+
+function circfade()
+	--add 111
+	if fade_dir == -1 then
+		fade_r = max(fade_r-1,0)
+		if fade_r==0 then
+			fade_tmr+=1
+			if fade_tmr>9 then
+				fade_dir = 1
+			end
+		end
+	elseif fade_dir==1 then
+		fade_r=min(fade_r+1,100)
+		if fade_r==100 then
+			fadding = false
+			fade_dir = 0
+		end
+	end
+	circfill(64,64,fade_r,1 | 0x1800)
+	if fade_r>1 then
+		circ(64,64,fade_r,5)
+	end
+--	fade_dir
+end
 __gfx__
 0000000000000000000000000c0000c00c000c000007700000c77c000007700000c77c0007007070070707000000000000000000000000000000000000000000
 00000000000d00000000d0000c0000c00c000c0000000000000cc000000cc00000c77c0006006060060606000000000000000000000000000000000000000000
