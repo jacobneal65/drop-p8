@@ -693,7 +693,7 @@ function upd_eol()
 	end
 	if e_state==4 then
 		m_off+=1
-		p_lerp(54,64)
+		p_lerp(60,64)
 		if m_off>150 then
 			e_state=5
 			gen_tmr=0
@@ -703,7 +703,7 @@ function upd_eol()
 		--open warp
 		w_off=0
 		wrp_spr=min(wrp_spr+2,90)
-		puff(54,24+w_off,warp_c)
+		puff(60,24+w_off,warp_c)
 		if wrp_spr==90 then
 			e_state=6
 			d_plyr=drw_sqsh
@@ -724,23 +724,32 @@ function upd_eol()
 			w_off=-40
 			e_state=8
 			init_circfade()
-			p_x,p_y=54,150
-			init_plerp()
-			d_plyr=drw_player
 		end
 	end
 	if e_state==8 and fadding == false then
 		--open warp
 		w_off=80
 		wrp_spr=min(wrp_spr+2,90)
-		puff(54,24+w_off,warp_c)
+		puff(60,24+w_off,warp_c)
 		if wrp_spr==90 then
 			e_state=9
+			p_x,p_y=60,102
+			init_plerp()
 			d_plyr=drw_sqsh
 		end
 	end
 	if e_state==9 then
 		--warp in
+		p_y=max(p_y-5,64)
+		if p_y==64 then
+			d_plyr=drw_player
+			e_state =10
+			gen_tmr=0
+			w_off=-40
+		end
+	end
+	if e_state==10 then
+		
 	end
 --	if level < #levels+1 then
 -- init_fruitlet()
@@ -779,7 +788,6 @@ function drw_eol()
 end
 
 function draw_mothership()
-	--draw_refuelrs()
 	local mx,my=16,32
 	spr(64,mx,my+m_off,6,10)
 	fire(mx+11,my+72+m_off,0,0.5,6,6,f3c)
@@ -787,9 +795,8 @@ function draw_mothership()
 	spr(dock_spr,mx+45,my+42+m_off)
 end
 
---warp to next area
 function draw_warp()
-	spr(wrp_spr,50,20+w_off,2,2)	
+	spr(wrp_spr,56,20+w_off,2,2)	
 end
 
  
