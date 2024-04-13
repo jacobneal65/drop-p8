@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=7
+	wave=1
 	t=0
 	debug={""}
 	effects={}
@@ -431,7 +431,6 @@ function update_fruit()
 			--no more waves in level
 			if wave > #levels[level] then
 				wave=1
-				level+=1
 				_upd=init_eol--end of lvl
 			end
 			
@@ -749,9 +748,17 @@ function upd_eol()
 		end
 	end
 	if e_state==10 then
-		
+		if level < #levels+1 then
+			level+=1
+			_upd=upd_level
+			_drw=drw_level
+			init_fruitlet()
+			init_fruit_wave()
+		else
+			debug[1]="no more levels"
+		end
 	end
---	if level < #levels+1 then
+--	
 -- init_fruitlet()
 --		init_fruit_wave()
 --	else
