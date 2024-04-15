@@ -56,7 +56,9 @@ function _init()
 	mult=1
 	mult_up=0
 	temp_points=0
+	
 	mult_sfx=1
+	fruit_chain=0
 	tf_tmr=0--transfer timer
 	
 	poke(0x5f34, 0x2)--circfade
@@ -382,6 +384,7 @@ function update_fruit()
 			if bucket_collides(fruit) then
 				score_intensity=0.5
 				mult_up+=1
+				fruit_chain+=1
 				if mult_up > 9 then
 					mult_up=0
 					mult+=1
@@ -392,9 +395,10 @@ function update_fruit()
 				fr_ani,fr_tmr=true,0
 				fr_spr=32
 				
-				if mult >4 then
+				mult_sfx=1
+				if fruit_chain >7 then
 					mult_sfx=7
-				elseif mult>1 then
+				elseif fruit_chain>3 then
 					mult_sfx=6
 				end
 				shwave(fruit.x+3,fruit.y+3,1,4,bshv_c)
@@ -403,7 +407,6 @@ function update_fruit()
 				tf_tmr=0	
 				sfx(mult_sfx)
 			end
-			
 			--tank animation		
 			if fr_ani then
 				fr_tmr+=1
@@ -431,6 +434,7 @@ function update_fruit()
 				wave=1
 				_upd=init_eol--end of lvl
 			else
+				fruit_chain=0
 				init_fruit_wave()
 			end
 			
