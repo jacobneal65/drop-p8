@@ -36,7 +36,7 @@ function _init()
 	b_arr={}--bezier array
 	--pattern,sx,end_x,bez_arr
 	levels={
-		{{9,48,80},{7,8,64},{1,64,120},{0,8,64},{1,64,120},{0,8,64},{1,64,120},{0,8,64}},
+		{{9,80,80},{7,80,80},{0,8,64},{1,64,120},{0,8,64},},
 		{{2,64,64},{3,0,10},{4,48,80},{5,64,64,{64,-10,-40,32,64,140}},{5,64,64,{64,-10,168,32,64,140}}},
 
 	}
@@ -307,30 +307,20 @@ function init_fruit_wave()
 	
 	local _x=rnd_rng(wv[2],wv[3])
 	b_arr=wv[4]--bezier array
-	local _typ=wv[1]
-	
-	if _typ==0 then--l_zig
-		--(_x,_amt,_typ)
-		fill_fruit(_x,10,_typ)
-	elseif _typ==1 then--r_zig
-		fill_fruit(_x,10,_typ)
-	elseif _typ==2 then--cross
-		fill_fruit(_x,10,_typ)
-	elseif _typ==3 then--line
+	local _typ=wv[1]	
+	if _typ==3 then--line
 		fill_fruit(0,5,_typ)
 	elseif _typ==4 then--dbl zig
-		fill_fruit(_x,10,_typ)
-		fill_fruit(_x,10,_typ)
-	elseif _typ==5 then--q_bez
-		fill_fruit(_x,10,_typ)
+		fill_fruit(_x,10,0)
+		fill_fruit(_x,10,1)
 	elseif _typ==6 then--c_bez
 		fill_fruit(64,1,10,_typ)
 	elseif _typ==7 then--stgr l
 		fill_fruit(0,8,_typ)
 	elseif _typ==8 then--stgr r
 		fill_fruit(120,8,_typ)
-	elseif _typ==9 then--zig stgr r
-		fill_fruit(64,10,_typ)		
+	else--any other pattern
+		fill_fruit(_x,10,_typ)		
 	end
 	
 	--calculate total blue points
@@ -338,7 +328,7 @@ function init_fruit_wave()
 	t_blue=0
 	for wv in all(wvs) do
 		local amt,_typ=10,wv[1]
-		if _typ==4 or _typ==7 then
+		if _typ==3 then
 			amt=5
 		elseif _typ==5 then
 			amt=20
