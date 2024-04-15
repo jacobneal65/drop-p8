@@ -24,7 +24,8 @@ function _init()
 	p_spd=2
 	--player offset l,r,b,t
 	p_o={-1,8,1,-7}
-	
+	low_fuel=false
+	fuel_mask_r=90
 	fruits={}
 	fruitlet={}
 	t_spr=64 --fruit sprite
@@ -107,7 +108,6 @@ end
 
 function _draw()
 	cls()
-	rectfill(0,0,128,8,1)
 	starfield()
 	draw_fx()
 	_drw()
@@ -158,10 +158,22 @@ function upd_level()
 end
 
 function drw_level()
+	drw_circ_mask()
 	drw_dots()
 	drw_player()
+	draw_fuel()
 	drw_fruit()
 	drw_points()
+	
+end
+
+function drw_circ_mask()
+	if low_fuel then
+		fuel_mask_r=max(fuel_mask_r-1,79)
+	else
+		fuel_mask_r=min(fuel_mask_r+1,90)	
+	end
+	circfill(64,64,fuel_mask_r+sin(time()),2 | 0x1800)
 end
 
 function drw_dots()
@@ -170,6 +182,27 @@ function drw_dots()
 		pset(d.x+4,d.y+4,12)
 		fire(d.x+5,d.y+5,0,-0.5,1,2,f2c)
 	end
+end
+
+function draw_fuel()
+		roundrect(1,14,9,9,5,2)
+		print("f",4,16,9)
+ 	roundrect(2,24,7,40,5,6)
+ 	line(6,25,4,25,1)
+ 	line(6,62,4,62,1)
+	 bigtank=flr(min(fuel,100)/100*36)
+	 for i=1,bigtank do
+	 	local _clr = min(2,1+i%3)+8
+	 	if bigtank < 10 then
+	 		_clr=8
+	 		local txt="low fuel"
+	 		low_fuel=true
+	 		print(txt,hcenter(txt),64+sin(time()),8)
+	 		else
+	 			low_fuel=false
+			end
+			line(3,62-i,7,62-i,_clr)
+  end
 end
 
 function drw_player()
@@ -226,6 +259,7 @@ function rst_pspr()
 end
 
 function drw_points()
+	rectfill(0,0,128,8,1)
 	local _lvl="level: "..level
 	print(_lvl,hcenter(_lvl),2,7)
 	--points
@@ -396,10 +430,9 @@ function update_fruit()
 				fr_spr=32
 				
 				mult_sfx=1
-				if fruit_chain >7 then
+				if fruit_chain >9 then
 					mult_sfx=7
-				elseif fruit_chain>3 then
-					mult_sfx=6
+
 				end
 				shwave(fruit.x+3,fruit.y+3,1,4,bshv_c)
 				puff(fruit.x+3,fruit.y,f2c)
@@ -574,7 +607,7 @@ function update_fruitlet()
 			--fruit captured
 		if bucket_collides(fl) then
 			temp_points+=fl.sz
-			fuel = min(fuel+fl.sz*4,120)
+			fuel = min(fuel+fl.sz*4,110)
 			shwave(fl.x+3,fl.y+3,1,3,shwv_clrs)
 			fl_ani,fl_tmr=true,0
 			fl_spr=48
@@ -1111,6 +1144,13 @@ function circfade()
 		circ(64,64,fade_r,5)
 	end
 --	fade_dir
+end
+
+function roundrect(_x,_y,_w,_h,_oc,_ic)--draws box with round corner
+	rectfill(_x,_y+1,_x+max(_w-1,0),_y+max(_h-1,0)-1,_oc)
+	rectfill(_x+1,_y,_x+max(_w-1,0)-1,_y+max(_h-1,0),_oc)
+	rectfill(_x+1,_y+2,_x+max(_w-1,0)-1,_y+max(_h-1,0)-2,_ic)
+	rectfill(_x+2,_y+1,_x+max(_w-1,0)-2,_y+max(_h-1,0)-1,_ic)
 end
 __gfx__
 00000000000000000000000007007070070707000007700000c77c000007700000c77c0000000000000000000000000000000000000000000000000000000000
