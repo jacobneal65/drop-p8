@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=1
+	wave=7
 	t=0
 	debug={""}
 	effects={}
@@ -653,6 +653,8 @@ function init_eol()
 	init_plerp()
 	d_plyr=drw_player--draw fn
 	e_state=0
+	eol_mask=10
+	ismask=true
 	_upd=upd_eol
 	_drw=drw_eol
 end
@@ -794,7 +796,13 @@ function upd_eol()
 			w_off=-40
 		end
 	end
-	if e_state==10 then
+	if e_state == 10 then
+		ismask=false
+		if eol_mask==10 then
+			e_state = 11
+		end
+	end
+	if e_state==11 then
 		if level < #levels+1 then
 			level+=1
 			_upd=upd_level
@@ -829,10 +837,21 @@ function drw_sqsh()
 end
 
 function drw_eol()
-	drw_points()
 	draw_mothership()
 	d_plyr()
+	drw_eol_mask()
+	drw_points()
 	draw_warp()
+	
+end
+
+function drw_eol_mask()
+	if ismask then
+		eol_mask=max(eol_mask-0.5,0)	
+	else
+		eol_mask=min(eol_mask+0.5,10)	
+	end
+	rectfill(10-eol_mask,-10,118+eol_mask,130,1 | 0x1800)
 end
 
 function draw_mothership()
@@ -1125,15 +1144,16 @@ end
 function circfade()
 	--add 111
 	if fade_dir == -1 then
-		fade_r = max(fade_r-1,0)
+		fade_r = max(fade_r-2,0)
 		if fade_r==0 then
+			pset(64,64,1)
 			fade_tmr+=1
 			if fade_tmr>9 then
 				fade_dir = 1
 			end
 		end
 	elseif fade_dir==1 then
-		fade_r=min(fade_r+1,100)
+		fade_r=min(fade_r+2,100)
 		if fade_r==100 then
 			fadding = false
 			fade_dir = 0
