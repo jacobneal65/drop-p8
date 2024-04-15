@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=7
+	wave=1
 	t=0
 	debug={""}
 	effects={}
@@ -37,7 +37,7 @@ function _init()
 	b_arr={}--bezier array
 	--pattern,sx,end_x,bez_arr
 	levels={
-		{{0,8,64},{1,64,120},{0,8,64},{1,64,120},{0,8,64},{1,64,120},{0,8,64}},
+		{{9,48,80},{7,8,64},{1,64,120},{0,8,64},{1,64,120},{0,8,64},{1,64,120},{0,8,64}},
 		{{2,64,64},{3,0,10},{4,48,80},{5,64,64,{64,-10,-40,32,64,140}},{5,64,64,{64,-10,168,32,64,140}}},
 
 	}
@@ -309,23 +309,27 @@ function init_fruit_wave()
 	
 	if _typ==0 then--l_zig
 		--(_x,_amt,_typ)
-		fill_fruit(_x,10,0)
+		fill_fruit(_x,10,_typ)
 	elseif _typ==1 then--r_zig
-		fill_fruit(_x,10,1)
+		fill_fruit(_x,10,_typ)
 	elseif _typ==2 then--cross
-		fill_fruit(_x,10,2)
+		fill_fruit(_x,10,_typ)
 	elseif _typ==3 then--line
-		fill_fruit(0,5,3)
+		fill_fruit(0,5,_typ)
 	elseif _typ==4 then--dbl zig
-		fill_fruit(_x,10,0)
-		fill_fruit(_x,10,1)
+		fill_fruit(_x,10,_typ)
+		fill_fruit(_x,10,_typ)
 	elseif _typ==5 then--q_bez
-		fill_fruit(_x,10,5)
+		fill_fruit(_x,10,_typ)
 	elseif _typ==6 then--c_bez
---		bx2,by2=180,120
---		bx3,by3=-60,120
---		bx4,by4=64,t_uybnd
-		fill_fruit(64,1,10,6)
+		fill_fruit(64,1,10,_typ)
+	elseif _typ==7 then--stgr l
+		fill_fruit(0,8,_typ)
+	elseif _typ==8 then--stgr r
+		fill_fruit(120,8,_typ)
+	elseif _typ==9 then--zig stgr r
+		fill_fruit(_x,10,_typ)
+		
 	end
 	
 	--calculate total blue points
@@ -333,14 +337,13 @@ function init_fruit_wave()
 	t_blue=0
 	for wv in all(wvs) do
 		local amt,_typ=10,wv[1]
-		if _typ==4 then
+		if _typ==4 or _typ==7 then
 			amt=5
 		elseif _typ==5 then
 			amt=20
 		end
 		t_blue+=amt
-	end
-	
+	end	
 end
 
 function fill_fruit(_x,_amt,_typ)
@@ -355,6 +358,16 @@ function fill_fruit(_x,_amt,_typ)
 		elseif _typ==3 then
 			nx=20*i
 			_i=1
+		elseif _typ==7 then--stgr line
+			nx=12*i
+		elseif _typ==8 then--stgr line
+				nx-=12*i
+		elseif _typ==9 then--zigr stgr
+				if i<4 then
+					nx-=12*i	
+				else
+					nx=-32+12*i
+				end
 		end
  	fruit={
  		x=nx,
@@ -364,6 +377,7 @@ function fill_fruit(_x,_amt,_typ)
  		tmr=0,
  		dly=8*_i,--delay
  		typ=_typ,
+ 		amt=_amt,
  	}
  	add(fruits,fruit)
  end	
@@ -469,52 +483,8 @@ function update_fruit()
 			else
 				fruit_chain=0
 				init_fruit_wave()
-			end
-			
+			end		
 		end
-	end
-end
-
-
-function init_dots()
-	dots={}
-	for i=1,#fruits do
-		add(dots,ct(fruits[i]))
-	end
-	_dot_fn=update_dots
-end
-
-function update_dots()
-		for cd in all(dots) do
-			if cd.dly >0 then
-					cd.dly-=1
-			else
-				local _typ = cd.typ
-				if _typ==5 or _typ==6 then
-						cd.tmr=min(cd.tmr+0.02,1)
-						cd.x,cd.y=get_pattern(cd)
-				else
-					cd.y+=t_grav
-					cd.x=get_pattern(cd)
-				end
-			end
-		end
-		if prvw_tmr<=70 then
-			prvw_tmr+=1
-		else
-			_dot_fn=finish_dots--switch fn
-		end
-end
-
-function finish_dots()
-	deli(dots,1)
-	if #dots>0 then
-		deli(dots,1)
-	end
-	if #dots==0 then
-		prvw=false
-		t_grav=grav
-		_dot_fn=init_dots
 	end
 end
 
@@ -534,6 +504,8 @@ function get_pattern(_t)
 		return qbc(_t.tmr,b[1],b[2],b[3],b[4],b[5],b[6])
 	elseif _typ==6 then--cbezier
 		return cbc(_t.tmr,b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8])
+	else--simple falling
+		return _t.x
 	end	
 end
 
@@ -636,6 +608,49 @@ function update_fruitlet()
 end
 
 
+-->8
+--dots
+function init_dots()
+	dots={}
+	for i=1,#fruits do
+		add(dots,ct(fruits[i]))
+	end
+	_dot_fn=update_dots
+end
+
+function update_dots()
+		for cd in all(dots) do
+			if cd.dly >0 then
+					cd.dly-=1
+			else
+				local _typ = cd.typ
+				if _typ==5 or _typ==6 then
+						cd.tmr=min(cd.tmr+0.02,1)
+						cd.x,cd.y=get_pattern(cd)
+				else
+					cd.y+=t_grav
+					cd.x=get_pattern(cd)
+				end
+			end
+		end
+		if prvw_tmr<=70 then
+			prvw_tmr+=1
+		else
+			_dot_fn=finish_dots--switch fn
+		end
+end
+
+function finish_dots()
+	deli(dots,1)
+	if #dots>0 then
+		deli(dots,1)
+	end
+	if #dots==0 then
+		prvw=false
+		t_grav=grav
+		_dot_fn=init_dots
+	end
+end
 -->8
 --end of level
 function init_eol()
@@ -807,6 +822,7 @@ function upd_eol()
 			level+=1
 			_upd=upd_level
 			_drw=drw_level
+			fuel_mask_r=90
 			init_fruitlet()
 			init_fruit_wave()
 		else
@@ -1300,7 +1316,7 @@ __sfx__
 020100002c6502c6602b6602a6602a660296602965028650286502865028650286502765027650276502765027650276502665025650256502465023650226502165021650206501f6501e6501e6501e6501f650
 49010000320202f0200d0002a000140001c0003200025000000002c00028000300002300034000360003900015000100001000010000100000000000000000000000000000000000000000000000000000000000
 c1010000126500f650006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600
-490100003a130341302f13028130251301f1301a130151300b1300b1300a130091300813007130061300513005130051300513004130041300313003130001000010000100001000010000100001000010000100
+490100001a0201a0201a0201702014020100200f0200e0200e0200f020100200e0200a0200802008020090200a0200c0200e0200c0200a0200a0200b0200d0201002012040130401204011040140401504015040
 0001000022650286502e6503165031650336503465035650366403762038610386103861039610396103961039610396103961039610396103961039610386103761036610316103161000600006000060000600
 010200000c0530f053110531305316053180531b0531d0531f0532205324053270532905329053290532905327053240531f0531f0531b05318053180531605316053180531b0531d0531f053240532705329053
 __music__
