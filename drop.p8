@@ -868,7 +868,9 @@ function drw_eol_mask()
 	else
 		eol_mask=min(eol_mask+0.5,10)	
 	end
-	rectfill(10-eol_mask,-10,118+eol_mask,130,1 | 0x1800)
+	
+	rectfill(10-eol_mask,-10,118+eol_mask,130,0 | 0x1800)
+	rect(10-eol_mask,-10,118+eol_mask,130,13)
 end
 
 function draw_mothership()
