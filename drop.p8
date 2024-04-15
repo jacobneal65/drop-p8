@@ -196,7 +196,7 @@ function draw_fuel()
 	 for i=1,bigtank do
 	 	local _clr = min(2,1+i%3)+8
 	 	if bigtank < 10 then
-	 		_clr=8
+	 		_clr=max(1,(i%3-1)*7)+7
 	 		local txt="low fuel"
 	 		low_fuel=true
 	 		print(txt,hcenter(txt),64+sin(time()),8)
@@ -330,8 +330,7 @@ function init_fruit_wave()
 	elseif _typ==8 then--stgr r
 		fill_fruit(120,8,_typ)
 	elseif _typ==9 then--zig stgr r
-		fill_fruit(_x,10,_typ)
-		
+		fill_fruit(64,10,_typ)		
 	end
 	
 	--calculate total blue points
@@ -360,15 +359,15 @@ function fill_fruit(_x,_amt,_typ)
 		elseif _typ==3 then
 			nx=20*i
 			_i=1
-		elseif _typ==7 then--stgr line
+		elseif _typ==7 then--stag line
 			nx=12*i
-		elseif _typ==8 then--stgr line
+		elseif _typ==8 then--stag line
 				nx-=12*i
-		elseif _typ==9 then--zigr stgr
-				if i<4 then
+		elseif _typ==9 then--zig r stgr
+				if i<5 then
 					nx-=12*i
 				else
-					nx=-36+12*i
+					nx+=12*(i-10)
 				end
 		end
  	fruit={
