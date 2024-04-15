@@ -24,8 +24,7 @@ function _init()
 	p_spd=2
 	--player offset l,r,b,t
 	p_o={-1,8,1,-7}
-	low_fuel=false
-	fuel_mask_r=90
+	
 	fruits={}
 	fruitlet={}
 	t_spr=64 --fruit sprite
@@ -50,7 +49,10 @@ function _init()
 	fr_spr=36
 	fr_tmr=0
 	
-	fuel=120--red tank
+	fuel=110--red tank
+	fuel_mx=110
+	low_fuel=false
+	fuel_mask_r=90
 	fl_ani=false
 	fl_spr=52
 	fl_tmr=0
@@ -190,7 +192,7 @@ function draw_fuel()
  	roundrect(2,24,7,40,5,6)
  	line(6,25,4,25,1)
  	line(6,62,4,62,1)
-	 bigtank=flr(min(fuel,100)/100*36)
+	 bigtank=flr(min(fuel,fuel_mx)/fuel_mx*36)
 	 for i=1,bigtank do
 	 	local _clr = min(2,1+i%3)+8
 	 	if bigtank < 10 then
@@ -209,7 +211,7 @@ function drw_player()
 	--line under ship
 	line(p_x-1,p_y+5,p_x+8,p_y+5,5)
 	--red tank insides
- tank=flr(min(fuel,100)/100*24)
+ tank=flr(min(fuel,fuel_mx)/fuel_mx*24)
  ty=0
 	for i=1,tank do
 		local _i=(i-1)%4+1
@@ -364,9 +366,9 @@ function fill_fruit(_x,_amt,_typ)
 				nx-=12*i
 		elseif _typ==9 then--zigr stgr
 				if i<4 then
-					nx-=12*i	
+					nx-=12*i
 				else
-					nx=-32+12*i
+					nx=-36+12*i
 				end
 		end
  	fruit={
@@ -444,7 +446,7 @@ function update_fruit()
 				fr_spr=32
 				
 				mult_sfx=1
-				if fruit_chain >9 then
+				if fruit_chain > 9 then
 					mult_sfx=7
 
 				end
@@ -476,12 +478,12 @@ function update_fruit()
 		if #fruits==0 then
 			fr_spr=36
 			wave+=1
+			fruit_chain=0
 			--no more waves in level
 			if wave > #levels[level] then
 				wave=1
 				_upd=init_eol--end of lvl
 			else
-				fruit_chain=0
 				init_fruit_wave()
 			end		
 		end
@@ -724,14 +726,13 @@ function upd_eol()
 		if gen_tmr > 10 then
 			sfx(14)
 			gen_tmr=0
-			fuel=min(fuel+10,120)
-			if b_points > 4 then
-				b_points-=4
+			fuel=min(fuel+10,fuel_mx)
+			if b_points > 10 then
+				b_points-=10
 			else
 				b_points=0
 			end
-			
-			if fuel==120 and b_points == 0 then
+			if fuel==fuel_mx and b_points == 0 then
 				e_state=3
 			end
 		else
@@ -825,6 +826,7 @@ function upd_eol()
 			fuel_mask_r=90
 			init_fruitlet()
 			init_fruit_wave()
+			
 		else
 			debug[1]="no more levels"
 		end
