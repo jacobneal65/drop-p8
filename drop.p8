@@ -151,7 +151,6 @@ function upd_level()
 	if (p_x < 0) p_x=1
 	if (p_y > 120) p_y=120
 	if (p_y < 16) p_y=17
-	--transfer_points()
 	--fruit
 	update_fruit()
 	update_fruitlet()
@@ -432,6 +431,8 @@ function update_fruit()
 			if wave > #levels[level] then
 				wave=1
 				_upd=init_eol--end of lvl
+			else
+				init_fruit_wave()
 			end
 			
 		end
@@ -640,11 +641,15 @@ function upd_eol()
 			score_intensity=0.5
 			sfx(11)
 		elseif s_tmr>=90 then
-			if temp_points>0 then
-				temp_points-=1
-				points+=1
+			if temp_points > 0 then
+				if temp_points > 100 then
+					points+=100
+					temp_points-=100
+				else
+					points+=temp_points
+					temp_points-=temp_points
+				end
 				sfx(12)
-			else
 			end
 		end
 	end
@@ -667,8 +672,13 @@ function upd_eol()
 		if gen_tmr > 10 then
 			sfx(14)
 			gen_tmr=0
-			fuel=min(fuel+4,120)
-			b_points=max(b_points-1,0)
+			fuel=min(fuel+10,120)
+			if b_points > 4 then
+				b_points-=4
+			else
+				b_points=0
+			end
+			
 			if fuel==120 and b_points == 0 then
 				e_state=3
 			end
@@ -706,6 +716,7 @@ function upd_eol()
 		if wrp_spr==90 then
 			e_state=6
 			d_plyr=drw_sqsh
+			sfx(16)
 		end
 	end
 	if e_state == 6 then
@@ -735,6 +746,7 @@ function upd_eol()
 			p_x,p_y=60,102
 			init_plerp()
 			d_plyr=drw_sqsh
+			sfx(16)
 		end
 	end
 	if e_state==9 then
@@ -758,13 +770,7 @@ function upd_eol()
 			debug[1]="no more levels"
 		end
 	end
---	
--- init_fruitlet()
---		init_fruit_wave()
---	else
---		debug[2]="no more levels"
---	end
-	
+
 end
 
 function init_plerp()
@@ -1234,6 +1240,7 @@ __sfx__
 c1010000126500f650006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600
 490100003a130341302f13028130251301f1301a130151300b1300b1300a130091300813007130061300513005130051300513004130041300313003130001000010000100001000010000100001000010000100
 0001000022650286502e6503165031650336503465035650366403762038610386103861039610396103961039610396103961039610396103961039610386103761036610316103161000600006000060000600
+010200000c0530f053110531305316053180531b0531d0531f0532205324053270532905329053290532905327053240531f0531f0531b05318053180531605316053180531b0531d0531f053240532705329053
 __music__
 01 04454344
 02 04054344
