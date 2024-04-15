@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=1
+	wave=5
 	t=0
 	debug={""}
 	effects={}
@@ -56,6 +56,7 @@ function _init()
 	fl_ani=false
 	fl_spr=52
 	fl_tmr=0
+	fl_off=0
 	mult=1
 	mult_up=0
 	temp_points=0
@@ -187,11 +188,15 @@ function drw_dots()
 end
 
 function draw_fuel()
-		roundrect(1,14,9,9,5,2)
-		print("f",4,16,9)
- 	roundrect(2,24,7,40,5,6)
- 	line(6,25,4,25,1)
- 	line(6,62,4,62,1)
+		local _f=fl_off
+		roundrect(1+_f,14,9+_f,9,5,2)
+		print("f",4+_f,17,1)
+		print("f",4+_f,16,9)
+ 	roundrect(2+_f,24,7+_f,40,5,6)
+ 	line(6+_f,25,4+_f,25,1)
+ 	line(6+_f,62,4+_f,62,1)
+ 	
+ 	--fuel warning
 	 bigtank=flr(min(fuel,fuel_mx)/fuel_mx*36)
 	 for i=1,bigtank do
 	 	local _clr = min(2,1+i%3)+8
@@ -203,7 +208,7 @@ function draw_fuel()
 	 		else
 	 			low_fuel=false
 			end
-			line(3,62-i,7,62-i,_clr)
+			line(3+_f,62-i,7+_f,62-i,_clr)
   end
 end
 
@@ -661,6 +666,8 @@ function init_eol()
 	e_state=0
 	eol_mask=10
 	ismask=true
+	fl_off=-20
+	
 	_upd=upd_eol
 	_drw=drw_eol
 end
@@ -743,7 +750,7 @@ function upd_eol()
 		end
 	end
 	if e_state==4 then
-		m_off+=1
+		m_off+=1.5
 		p_lerp(60,64)
 		if m_off>150 then
 			e_state=5
@@ -804,11 +811,22 @@ function upd_eol()
 	if e_state == 10 then
 		ismask=false
 		if eol_mask==10 then
+			gen_tmr=0
+			fl_str=fl_off
 			e_state = 11
 		end
 	end
 	if e_state==11 then
-		if level < #levels+1 then
+		--slide in ui elements
+		gen_tmr=min(gen_tmr+0.02,1)
+	 local _t=easeinoutovershoot(gen_tmr)
+		fl_off=lerp(fl_str,0,_t)
+		if gen_tmr==1 then
+			e_state=12
+		end
+	end
+	if e_state==12 then
+		if level < #levels then
 			level+=1
 			_upd=upd_level
 			_drw=drw_level
@@ -846,10 +864,10 @@ end
 function drw_eol()
 	draw_mothership()
 	d_plyr()
+	draw_fuel()
 	drw_eol_mask()
 	drw_points()
 	draw_warp()
-	
 end
 
 function drw_eol_mask()
