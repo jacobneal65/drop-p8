@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=2
+	wave=7
 	t=0
 	debug={""}
 	effects={}
@@ -370,7 +370,6 @@ function fill_fruit(_x,_amt,_typ)
  	fruit={
  		x=nx,
  		y=-10,
- 		by=-10,
  		i=i,
  		tmr=0,
  		dly=8*_i,--delay
@@ -486,47 +485,49 @@ function update_fruit()
 	end
 end
 
-function get_pattern(_t)
-	local _typ=_t.typ
+function get_pattern(_f)
+	local _typ=_f.typ
 	if _typ==0 or _typ==1 then--zig
-		return zig_p(_t)
+		return zig_p(_f)
 	elseif _typ==2 then--cros
-		return cros_p(_t)
+		return cros_p(_f)
 	elseif _typ==3 then--line
-		if _t.y>100 then
+		if _f.y>100 then
 			t_grav=-1
 		end
-		return _t.x
+		return _f.x
 	elseif _typ==5 then--qbezier
 		local b = b_arr
-		return qbc(_t.tmr,b[1],b[2],b[3],b[4],b[5],b[6])
+		return qbc(_f.tmr,b[1],b[2],b[3],b[4],b[5],b[6])
 	elseif _typ==6 then--cbezier
-		return cbc(_t.tmr,b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8])
+		return cbc(_f.tmr,b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8])
+	elseif _typ==10 then--spline
+		return spline(_f.tmr,b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8])
 	else--simple falling
-		return _t.x
+		return _f.x
 	end	
 end
 
-function zig_p(_t)
+function zig_p(_f)
 	local dir=2
-	if (_t.typ==1) dir=-2
-	if _t.y >= 0 and _t.y < 50 then
-		_t.x+=dir
-	elseif _t.y >=50 then
-		_t.x-=dir
+	if (_f.typ==1) dir=-2
+	if _f.y >= 0 and _f.y < 50 then
+		_f.x+=dir
+	elseif _f.y >=50 then
+		_f.x-=dir
 	end
-	return _t.x
+	return _f.x
 end
 
-function cros_p(_t)
-	if _t.y >= 0 then
+function cros_p(_f)
+	if _f.y >= 0 then
 		local c_dir=-2
-		if _t.i%2==1 then
+		if _f.i%2==1 then
 			c_dir=2
 		end
-		_t.x+=c_dir
+		_f.x+=c_dir
 	end
-	return _t.x
+	return _f.x
 end
 
 --quadratic bezier curve 3pts
@@ -542,6 +543,13 @@ function cbc(t,x1,y1,x2,y2,x3,y3,x4,y4)
 	local _t1=(1-t)
 	local _x = _t1^3*x1+3*_t1^2*t*x2+3*_t1*t^2*x3+t^3*x4
 	local _y = _t1^3*y1+3*_t1^2*t*y2+3*_t1*t^2*y3+t^3*y4
+	return _x,_y
+end
+
+
+function spline(_f)
+	
+	
 	return _x,_y
 end
 
@@ -669,7 +677,7 @@ function init_eol()
 	eol_mask=10
 	ismask=true
 	fl_off=-20
-	
+	sun_off=140
 	_upd=upd_eol
 	_drw=drw_eol
 end
@@ -785,49 +793,58 @@ function upd_eol()
 			w_off=-40
 			e_state=8
 			init_circfade()
+			gen_tmr=0
 		end
 	end
 	if e_state==8 and fadding == false then
+		sun_off=max(sun_off-4,-140)
+		if sun_off ==-140 then
+			e_state=9
+		end
+	end
+	
+	
+	if e_state==9 and fadding == false then
 		--open warp
 		w_off=80
 		wrp_spr=min(wrp_spr+2,90)
 		puff(60,24+w_off,warp_c)
 		if wrp_spr==90 then
-			e_state=9
+			e_state=10
 			p_x,p_y=60,102
 			init_plerp()
 			d_plyr=drw_sqsh
 			sfx(16)
 		end
 	end
-	if e_state==9 then
+	if e_state==10 then
 		--warp in
 		p_y=max(p_y-5,64)
 		if p_y==64 then
 			d_plyr=drw_player
-			e_state =10
+			e_state =11
 			gen_tmr=0
 			w_off=-40
 		end
 	end
-	if e_state == 10 then
+	if e_state == 11 then
 		ismask=false
 		if eol_mask==10 then
 			gen_tmr=0
 			fl_str=fl_off
-			e_state = 11
+			e_state = 12
 		end
 	end
-	if e_state==11 then
+	if e_state==12 then
 		--slide in ui elements
 		gen_tmr=min(gen_tmr+0.02,1)
 	 local _t=easeinoutovershoot(gen_tmr)
 		fl_off=lerp(fl_str,0,_t)
 		if gen_tmr==1 then
-			e_state=12
+			e_state=13
 		end
 	end
-	if e_state==12 then
+	if e_state==13 then
 		if level < #levels then
 			level+=1
 			_upd=upd_level
@@ -864,6 +881,7 @@ function drw_sqsh()
 end
 
 function drw_eol()
+	draw_sun()
 	draw_mothership()
 	d_plyr()
 	draw_fuel()
@@ -893,6 +911,25 @@ end
 
 function draw_warp()
 	spr(wrp_spr,56,20+w_off,2,2)	
+end
+
+function draw_sun()
+	c1,c2=12,1--9,10--2,8
+ x,y=63,63+sun_off
+ num=100
+ r=30
+ rndm=15
+ for i=1,num do
+ 	line(x,y,x+cos(i/num)*(r+flr(rnd(rndm)))
+ 	, y+sin(i/num)*(r+flr(rnd(rndm))),c1)
+ end
+ for i=1,num do
+ 	line(x,y,x+cos(i/num)*(r+flr(rnd(rndm)))
+ 	, y+sin(i/num)*(r+flr(rnd(rndm))),c2)
+ end
+ rd=34
+ circfill(x,y,rd+1+cos(time()),c2)
+	circfill(x,y,rd+cos(time()),c1)
 end
 
  
