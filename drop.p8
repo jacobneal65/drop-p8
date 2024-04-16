@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=5
+	wave=2
 	t=0
 	debug={""}
 	effects={}
@@ -36,8 +36,10 @@ function _init()
 	b_arr={}--bezier array
 	--pattern,sx,end_x,bez_arr
 	levels={
-		{{9,80,80},{7,80,80},{0,8,64},{1,64,120},{0,8,64},},
-		{{2,64,64},{3,0,10},{4,48,80},{5,64,64,{64,-10,-40,32,64,140}},{5,64,64,{64,-10,168,32,64,140}}},
+		{{9,80,80},{7,80,80},{0,8,64},{1,64,120},{0,8,64},{9,80,80},{7,80,80}},
+		{{2,64,64},{3,0,10},{2,64,64},{3,0,10},{4,48,80},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}}},
+
+
 
 	}
 	
@@ -899,13 +901,14 @@ end
 
 --starfield
 function starfield()
+	scols={6,13,1}
 	for i=1,#starx do
-		local scol=6
+		local scol=scols[1]
 		
 		if starspd[i] < 1 then
-			scol=1
+			scol=scols[3]
 		elseif starspd[i] < 1.5 then
-			scol=13
+			scol=scols[2]
 		end
 		
 		if starspd[i] <= 1.5 then
