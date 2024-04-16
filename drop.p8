@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=1
+	wave=7
 	t=0
 	debug={""}
 	effects={}
@@ -113,9 +113,7 @@ end
 function _draw()
 	cls()
 	starfield()
-	draw_fx()
 	_drw()
-	
 	circfade()
 	
 	--debug
@@ -163,6 +161,8 @@ end
 
 function drw_level()
 	drw_circ_mask()
+	rectfill(0,0,128,8,1)
+	draw_fx()
 	drw_dots()
 	drw_player()
 	draw_fuel()
@@ -266,7 +266,6 @@ function rst_pspr()
 end
 
 function drw_points()
-	rectfill(0,0,128,8,1)
 	local _lvl="level: "..level
  print(_lvl,hcenter(_lvl),2,7)
 	--points
@@ -541,13 +540,6 @@ function cbc(t,x1,y1,x2,y2,x3,y3,x4,y4)
 	local _t1=(1-t)
 	local _x = _t1^3*x1+3*_t1^2*t*x2+3*_t1*t^2*x3+t^3*x4
 	local _y = _t1^3*y1+3*_t1^2*t*y2+3*_t1*t^2*y3+t^3*y4
-	return _x,_y
-end
-
-
-function spline(_f)
-	
-	
 	return _x,_y
 end
 
@@ -886,6 +878,8 @@ function drw_eol()
 	d_plyr()
 	draw_fuel()
 	drw_eol_mask()
+	rectfill(0,0,128,8,1)
+	draw_fx()
 	drw_points()
 	draw_warp()
 end
@@ -893,7 +887,7 @@ end
 function drw_eol_mask()
 	if ismask then
 		eol_mask=max(eol_mask-0.5,0)	
-	else
+	else 
 		eol_mask=min(eol_mask+0.5,10)	
 	end
 	
