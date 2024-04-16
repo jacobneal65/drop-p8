@@ -796,8 +796,16 @@ function upd_eol()
 			gen_tmr=0
 		end
 	end
+	debug[3]=e_state
+	debug[4]=fadding
+	debug[1]=sun_off
+		debug[2]=gen_tmr
 	if e_state==8 and fadding == false then
-		sun_off=max(sun_off-4,-140)
+		gen_tmr=min(gen_tmr+0.01,1)
+		local _tmr=easeoutinquart(gen_tmr)
+		
+		sun_off=lerp(140,-140,_tmr)
+		
 		if sun_off ==-140 then
 			e_state=9
 		end
@@ -930,6 +938,15 @@ function draw_sun()
  rd=34
  circfill(x,y,rd+1+cos(time()),c2)
 	circfill(x,y,rd+cos(time()),c1)
+	local y1=54+sun_off
+	local y2=y1+16
+	ovalfill(30-cos(time()),y1,97+cos(time()),y2,7)--white
+	ovalfill(30-cos(time()),y1-1,97+cos(time()),y2-1,12)--blue
+	local txt="class a"
+	local txt2="speed: unknown"
+	
+	oprint(txt,hcenter(txt)+sun_off,48,7,2)
+	oprint(txt2,hcenter(txt2)+sun_off,56,7,2)
 end
 
  
@@ -1201,6 +1218,16 @@ function easeoutquad(t)
 	return 1-t*t
 end
 
+function easeoutinquart(t)
+	if t<.5 then
+		t-=.5
+		return .5-8*t*t*t*t
+	else
+		t-=.5
+		return .5+8*t*t*t*t
+	end
+end
+
 function init_circfade()
 	fade_tmr=0
 	fade_dir = -1
@@ -1238,6 +1265,11 @@ function roundrect(_x,_y,_w,_h,_oc,_ic)--draws box with round corner
 	rectfill(_x+1,_y,_x+max(_w-1,0)-1,_y+max(_h-1,0),_oc)
 	rectfill(_x+1,_y+2,_x+max(_w-1,0)-1,_y+max(_h-1,0)-2,_ic)
 	rectfill(_x+2,_y+1,_x+max(_w-1,0)-2,_y+max(_h-1,0)-1,_ic)
+end
+
+function oprint(_t,_x,_y,_main_c,_shadow_c)
+	print(_t,_x+1,_y+1,_shadow_c)
+	print(_t,_x,_y,_main_c)
 end
 __gfx__
 00000000000000000000000007007070070707000007700000c77c000007700000c77c0000000000000000000000000000000000000000000000000000000000
