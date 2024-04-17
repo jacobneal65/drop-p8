@@ -39,6 +39,8 @@ function _init()
 		{{0,8,64},{1,64,120},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}},{1,64,120},{0,8,64},{3,0,0}},
 		{{2,0,60},{3,0,0},{2,0,60},{4,40,80},{4,40,80},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}}},
 		{{8,80,80},{7,80,80},{9,70,100},{3,0,0},{9,70,100},{8,80,80},{7,80,80}},
+		{{3,0,0},{6,0,0,{64,-10,180,120,-60,120,64,-11}},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}},{9,70,100},{8,80,80},{7,80,80}},
+
 	}
 	
 	t_blue=0--tank blue
@@ -318,7 +320,7 @@ function init_fruit_wave()
 		fill_fruit(_x,10,0)
 		fill_fruit(_x,10,1)
 	elseif _typ==6 then--c_bez
-		fill_fruit(64,1,10,_typ)
+		fill_fruit(64,10,_typ)
 	elseif _typ==7 then--stgr l
 		fill_fruit(0,8,_typ)
 	elseif _typ==8 then--stgr r
@@ -497,9 +499,8 @@ function get_pattern(_f)
 		local b = b_arr
 		return qbc(_f.tmr,b[1],b[2],b[3],b[4],b[5],b[6])
 	elseif _typ==6 then--cbezier
+		local b = b_arr
 		return cbc(_f.tmr,b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8])
-	elseif _typ==10 then--spline
-		return spline(_f.tmr,b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8])
 	else--simple falling
 		return _f.x
 	end	
