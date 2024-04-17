@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=1
+	wave=7
 	t=0
 	debug={""}
 	effects={}
@@ -18,6 +18,12 @@ function _init()
 	shwv_clrs={8,9,9,10}
 	bshv_c={7,12,12,12}
 	warp_c={7,11,11,3}
+	--sun class
+	sclrl={ 7,10,9}
+	sclrd={12, 9,2}
+	scls={"b","k","m"}
+	sgtyp={"irregular","normal","incongruent"}
+	
 	--player
 	p_x=64
 	p_y=100
@@ -909,7 +915,7 @@ function draw_warp()
 end
 
 function draw_sun()
-	c1,c2=12,1--9,10--2,8
+	c2,c1=sclrl[level],sclrd[level]
  x,y=63,63+sun_off
  num=100
  r=30
@@ -927,10 +933,10 @@ function draw_sun()
 	circfill(x,y,rd+cos(time()),c1)
 	local y1=54+sun_off
 	local y2=y1+16
-	ovalfill(30-cos(time()),y1,97+cos(time()),y2,7)--white
-	ovalfill(30-cos(time()),y1-1,97+cos(time()),y2-1,12)--blue
-	local txt="class a"
-	local txt2="speed: unknown"
+	ovalfill(30-cos(time()),y1,97+cos(time()),y2,c2)--white
+	ovalfill(30-cos(time()),y1-1,97+cos(time()),y2-1,c1)--blue
+	local txt="class "..scls[level]
+	local txt2="grav: "..sgtyp[level]
 	
 	oprint(txt,hcenter(txt)+sun_off,48,7,2)
 	oprint(txt2,hcenter(txt2)+sun_off,56,7,2)
