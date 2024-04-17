@@ -692,9 +692,9 @@ function upd_eol()
 			sfx(11)
 		elseif s_tmr>=90 then
 			if temp_points > 0 then
-				if temp_points > 100 then
-					points+=100
-					temp_points-=100
+				if temp_points > 50 then
+					points+=50
+					temp_points-=50
 				else
 					points+=temp_points
 					temp_points-=temp_points
