@@ -7,7 +7,7 @@ __lua__
 function _init()
 	music(1)
 	level=1
-	wave=7
+	wave=1
 	t=0
 	debug={""}
 	effects={}
@@ -896,8 +896,7 @@ function drw_eol_mask()
 		eol_mask=max(eol_mask-0.5,0)	
 	else 
 		eol_mask=min(eol_mask+0.5,11)	
-	end
-	
+	end	
 	rectfill(10-eol_mask,-10,118+eol_mask,130,0 | 0x1800)
 	rect(10-eol_mask,-10,118+eol_mask,130,13)
 end
@@ -936,8 +935,7 @@ function draw_sun()
 	ovalfill(30-cos(time()),y1,97+cos(time()),y2,c2)--white
 	ovalfill(30-cos(time()),y1-1,97+cos(time()),y2-1,c1)--blue
 	local txt="class "..scls[level]
-	local txt2="grav: "..sgtyp[level]
-	
+	local txt2="grav: "..sgtyp[level]	
 	oprint(txt,hcenter(txt)+sun_off,48,7,2)
 	oprint(txt2,hcenter(txt2)+sun_off,56,7,2)
 end
