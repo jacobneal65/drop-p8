@@ -6,7 +6,7 @@ __lua__
 --by olivander65
 function _init()
 	music(1)
-	level=2
+	level=1
 	wave=1
 	t=0
 	debug={""}
@@ -36,9 +36,9 @@ function _init()
 	b_arr={}--bezier array
 	--pattern,sx,end_x,bez_arr
 	levels={
-		{{9,80,80},{7,80,80},{0,8,64},{1,64,120},{0,8,64},{9,80,80},{7,80,80}},
-		{{2,0,60},{3,0,10},{2,0,60},{3,0,10},{4,48,80},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}}},
-
+		{{0,8,64},{1,64,120},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}},{1,64,120},{0,8,64},{3,0,0}},
+		{{2,0,60},{3,0,0},{2,0,60},{4,40,80},{4,40,80},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}}},
+		{{8,80,80},{7,80,80},{9,70,100},{3,0,0},{9,70,100},{8,80,80},{7,80,80}},
 	}
 	
 	t_blue=0--tank blue
@@ -306,7 +306,7 @@ end
 function init_fruit_wave()
 	local wv=levels[level][wave]
 
-	t_grav,t_tmr=2,0
+	t_grav,t_tmr=grav,0
 	prvw,prvw_tmr=true,0
 	
 	local _x=rnd_rng(wv[2],wv[3])
@@ -619,8 +619,7 @@ function update_dots()
 			if cd.dly >0 then
 					cd.dly-=1
 			else
-				local _typ = cd.typ
-				if _typ==5 or _typ==6 then
+				if cd.typ==5 or cd.typ==6 then
 						cd.tmr=min(cd.tmr+0.02,1)
 						cd.x,cd.y=get_pattern(cd)
 				else
@@ -889,7 +888,7 @@ function drw_eol_mask()
 	if ismask then
 		eol_mask=max(eol_mask-0.5,0)	
 	else 
-		eol_mask=min(eol_mask+0.5,10)	
+		eol_mask=min(eol_mask+0.5,11)	
 	end
 	
 	rectfill(10-eol_mask,-10,118+eol_mask,130,0 | 0x1800)
