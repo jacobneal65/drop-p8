@@ -100,6 +100,7 @@ function _init()
 	cam_x,cam_y=0,0
 	
  init_menu()
+ in_menu=true
 end
 
 function blank() end
@@ -132,21 +133,34 @@ function init_menu()
 	_drw=drw_menu
 	sun_off=-140
 	gen_tmr=0
+	init_fruitlet()
 end
 function upd_menu()
 	gen_tmr=min(gen_tmr+0.01,1)
 	local _tmr=easeinoutovershoot(gen_tmr)
-	sun_off=lerp(-140,0,_tmr)
-	menu_y=lerp(150,120,_tmr)
+	sun_off=lerp(-150,-60,_tmr)
+	menu_y=lerp(150,80,_tmr)
 	if false then
 		init_level()
 	end
-
+	if gen_tmr==1 then
+		update_fruitlet()
+	end
 end
+
 function drw_menu()
+	draw_fx()
+	drw_fruit()
 	draw_sun(intro_sun)
-	mt="start game"
-	print(mt,hcenter(mt),menu_y,7)
+	local q = {"jupiter","collection"}
+	oprint(q[1],hcenter(q[1])+sun_off+60,15,7,13)
+	oprint(q[2],hcenter(q[2])+sun_off+60,23,7,13)
+	
+	local m={"start game","endless mode","ship cust"}
+	for i=1,#m do
+		print(m[i],hcenter(m[i]),menu_y+8*(i-1),7)	
+	end
+	
 end
 -->8
 --level
@@ -603,7 +617,7 @@ function update_fruitlet()
 					fl.y+=fl.spd
 		end
 			--fruit captured
-		if bucket_collides(fl) then
+		if bucket_collides(fl) and not in_menu then
 			temp_points+=fl.sz
 			fuel = min(fuel+fl.sz*4,110)
 			shwave(fl.x+3,fl.y+3,1,3,shwv_clrs)
@@ -964,12 +978,10 @@ function draw_sun(l)
 	ovalfill(30-cos(time()),y1-1,97+cos(time()),y2-1,c1)--blue
 	local txt="class "..scls[level]
 	local txt2="grav: "..sgtyp[level]	
-	if l then
-		txt="jupiter"
-		txt2="collection"
-	end
+	if not l then
 		oprint(txt,hcenter(txt)+sun_off,48,7,13)
 		oprint(txt2,hcenter(txt2)+sun_off,56,7,13)
+	end
 end
 
  
