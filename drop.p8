@@ -5,6 +5,7 @@ __lua__
 --jupiter collection
 --by olivander65
 function _init()
+	v="1"
 	level=1
 	wave=1
 	t=0
@@ -27,6 +28,8 @@ function _init()
 	p_x=64
 	p_y=100
 	p_spd=2.5
+	pc_spr=3
+	p_spr=3
 	--player offset l,r,b,t
 	p_o={-1,8,1,-7}
 	
@@ -139,6 +142,8 @@ function init_menu()
 	_lerpfn=blank
 	lerp_tmr=0
 	btn_sprs={92,93,94}
+	s_stat="docked"
+	s_clr=3
 end
 
 function upd_menu()
@@ -197,6 +202,11 @@ function lerp_menu()
 	end
 end
 
+function oline(x1,y1,x2,y2,c1,c2,xo,yo)
+	line(x1,y1,x2,y2,c1)
+	line(x1+xo,y1+yo,x2+xo,y2+yo,c2)
+end
+
 function drw_menu()
 	draw_fx()
 	drw_fruit()
@@ -205,10 +215,29 @@ function drw_menu()
 	oprint(q[1],hcenter(q[1])+sun_off+60,15,7,13)
 	oprint(q[2],hcenter(q[2])+sun_off+60,23,7,13)
 	
+	rect(0,0,127,75,6)
+	rect(1,1,126,74,1)
 	rectfill(0,76,128,128,5)
-	roundrect(37,78,54,40,6,0)
-	--menu
-	local iclr={3,11,3}--menu clr
+	--wires
+	oline(0,85,45,85,8,2,0,1)
+	oline(65,105,100,105,8,2,0,1)
+	oline(65,85,100,85,8,2,0,1)
+	oline(15,85,15,100,8,2,1,0)
+	
+	oline(15,100,64,100,8,2,0,1)
+	oline(0,110,64,110,8,2,0,1)
+	
+	roundrect(2,96,32,11,6,0)--stxt	
+	print(s_stat,6,99,s_clr)
+	roundrect(37,78,54,40,6,0)--term
+	
+	
+	--ship ui
+	roundrect(8,78,16,16,6,0)
+	spr(p_spr,12,82)
+	
+	--central menu screen
+	local iclr={3,11,3}--menu color
 	for i=1,#m do
 		if i==2 then
 			lprint(m[i],hcenter(m[i]),menu_y+8*i+my_off[i],iclr[i],5)		
@@ -224,8 +253,9 @@ function drw_menu()
 		--blocks the text scrolling in
 		line(38,117,89,117,6)
 		rectfill(0,118,128,128,5)
-		local tx="property of labco"
+		local tx="property of orion corp"
 		print(tx,hcenter(tx),122,6)
+		print("v"..v,120,122,6)
 	end	
 end
 
@@ -250,11 +280,11 @@ function upd_level()
 	--left/right
 	if btn(0) then 
 	 p_x-=p_spd 
-	 p_spr,b_spr,s_spr=4,17,21
+	 pc_spr,b_spr,s_spr=p_spr+1,17,21
 	end
 	if btn(1) then
 	 p_x+=p_spd 
-	 p_spr,b_spr,s_spr=4,17,21
+	 pc_spr,b_spr,s_spr=p_spr+1,17,21
 	 p_flp=true
 	end
 	--up/down
@@ -353,7 +383,7 @@ function drw_player()
 	end
 
 	--player
-	spr(p_spr,p_x,p_y,1,1,p_flp)
+	spr(pc_spr,p_x,p_y,1,1,p_flp)
 	--red tank
 	spr(s_spr,p_x+7,p_y+1,1,1,p_flp)
 	spr(fl_spr,p_x+7,p_y-7,1,1)
@@ -373,7 +403,7 @@ function drw_player()
 end
 
 function rst_pspr()
-	p_spr,b_spr,s_spr=3,1,19
+	pc_spr,b_spr,s_spr=p_spr,1,19
 	p_flp=false
 end
 
