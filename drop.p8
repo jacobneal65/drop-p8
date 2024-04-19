@@ -137,20 +137,32 @@ function init_menu()
 	sun_off=-140
 	gen_tmr=0
 	init_fruitlet()
-	m={"start game","endless mode","ship cust"}
-	my_off={0,0,0}
+	m={"start game","endless mode","ship cust","high scores"}
+	my_off={0,0,0,0}
 	_lerpfn=blank
 	lerp_tmr=0
 	btn_sprs={92,93,94}
 	s_stat="docked"
 	s_clr=3
+	rnd_chars={"ア","イ","ウ","エ","オ","カ","キ","ク","ケ","コ","サ","シ","ス","セ","ソ","タ","チ","ツ","テ","ト","ナ","ニ","ヌ","ネ","ノ"}
+	rnd_char={}
+	gen_char()
+end
+
+function gen_char()
+	rnd_char={}
+	for i=1,9 do
+		add(rnd_char,rnd_chars[rnd_rng(1,#rnd_chars)])
+	end
 end
 
 function upd_menu()
 	if btnp(⬆️) then
+		gen_char()
 		--move vals down
 		lerp_tmr=0
-		local t_m=m[3]
+		local t_m=m[4]
+		m[4]=m[3]
 		m[3]=m[2]
 		m[2]=m[1]
 		m[1]=t_m
@@ -159,11 +171,13 @@ function upd_menu()
 		btn_sprs[1]=108
 	elseif btnp(⬇️) then
 		--move vals up
+		gen_char()
 		lerp_tmr=0
 		local t_m=m[1]
 		m[1]=m[2]
 		m[2]=m[3]
-		m[3]=t_m
+		m[3]=m[4]
+		m[4]=t_m
 		ldir=1
 		_lerpfn=lerp_menu
 		btn_sprs[2]=109
@@ -177,7 +191,7 @@ function upd_menu()
 	gen_tmr=min(gen_tmr+0.01,1)
 	local _tmr=easeinoutovershoot(gen_tmr)
 	sun_off=lerp(-150,-60,_tmr)
-	menu_y=lerp(150,80,_tmr)
+	menu_y=lerp(150,76,_tmr)
 	if false then
 		init_level()
 	end
@@ -193,7 +207,7 @@ function lerp_menu()
 	lerp_tmr=min(lerp_tmr+0.2,1)
 	local _t=easeinoutovershoot(lerp_tmr)
 	for i=1,#m do
-		my_off[i]=lerp(ldir*8,0,_t)
+		my_off[i]=lerp(ldir*4,0,_t)
 	end
 	
 	if lerp_tmr==1 then
@@ -214,7 +228,7 @@ function drw_menu()
 	local q = {"jupiter","collection"}
 	oprint(q[1],hcenter(q[1])+sun_off+60,15,7,13)
 	oprint(q[2],hcenter(q[2])+sun_off+60,23,7,13)
-	
+	--widow
 	rect(0,0,127,75,6)
 	rect(1,1,126,74,1)
 	rectfill(0,76,128,128,5)
@@ -226,6 +240,7 @@ function drw_menu()
 	
 	oline(15,100,64,100,8,2,0,1)
 	oline(0,110,64,110,8,2,0,1)
+	oline(64,110,120,110,8,2,0,1)
 	
 	roundrect(2,96,32,11,6,0)--stxt	
 	print(s_stat,6,99,s_clr)
@@ -237,7 +252,7 @@ function drw_menu()
 	spr(p_spr,12,82)
 	
 	--central menu screen
-	local iclr={3,11,3}--menu color
+	local iclr={3,11,3,3}--menu color
 	for i=1,#m do
 		if i==2 then
 			lprint(m[i],hcenter(m[i]),menu_y+8*i+my_off[i],iclr[i],5)		
@@ -253,6 +268,30 @@ function drw_menu()
 		--blocks the text scrolling in
 		line(38,117,89,117,6)
 		rectfill(0,118,128,128,5)
+			--rivets
+		circfill(3,80,2,6)--topleft
+		rectfill(2,79,4,81,13)
+		
+		circfill(124,80,2,6)--toprght
+		rectfill(123,79,125,81,13)
+		
+		circfill(3,124,2,6)--botleft
+		rectfill(2,123,4,125,13)
+		
+		circ(116,80,1,13)
+		pset(116,80,0)
+		circ(110,80,1,13)
+		pset(110,80,0)
+		--r console
+		roundrect(108,85,19,29,6,0)
+		local ct=1
+		for i=1,4 do
+			for j=1,2 do
+				print(rnd_char[ct],102+j*8,i*6+82,11)
+				ct+=1
+			end
+		end
+		
 		local tx="property of orion corp"
 		print(tx,hcenter(tx),122,6)
 		print("v"..v,120,122,6)
