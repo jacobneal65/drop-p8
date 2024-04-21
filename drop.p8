@@ -245,6 +245,7 @@ function oline(x1,y1,x2,y2,c1,c2,xo,yo)
 end
 
 function drw_menu()
+	local oc1,oc2=8,2--cord colors
 	draw_fx()
 	drw_fruit()
 	draw_sun(intro_sun)
@@ -256,14 +257,14 @@ function drw_menu()
 	rect(1,1,126,74,1)
 	rectfill(0,76,128,128,5)
 	--wires
-	oline(0,85,45,85,8,2,0,1)
-	oline(65,105,100,105,8,2,0,1)
-	oline(65,85,100,85,8,2,0,1)
-	oline(15,85,15,100,8,2,1,0)
+	oline(0,85,45,85,oc1,oc2,0,1)
+	oline(65,105,100,105,oc1,oc2,0,1)
+	oline(65,85,100,85,oc1,oc2,0,1)
+	oline(15,85,15,100,oc1,oc2,1,0)
 	
-	oline(15,100,64,100,8,2,0,1)
-	oline(0,110,64,110,8,2,0,1)
-	oline(64,110,120,110,8,2,0,1)
+	oline(15,100,64,100,oc1,oc2,0,1)
+	oline(0,110,64,110,oc1,oc2,0,1)
+	oline(64,110,120,110,oc1,oc2,0,1)
 	
 	roundrect(2,96,32,11,6,0)--stxt	
 	print(s_stat,6,99,s_clr)
