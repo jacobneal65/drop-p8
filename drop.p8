@@ -7,7 +7,7 @@ __lua__
 function _init()
 	v="1"
 	level=1
-	wave=1
+	wave=7
 	t=0
 	debug={""}
 	effects={}
@@ -76,7 +76,7 @@ function _init()
 	fruit_chain=0
 	tf_tmr=0--transfer timer
 	
-	poke(0x5f34, 0x2)--circfade
+	poke(0x5f34, 0x2)--enable mask
 	fade_dir=0
 	fadding=false
 	fade_r=100
@@ -174,9 +174,7 @@ function upd_menu()
 	if gen_tmr==1 then
 		update_fruitlet()
 	end
-	
 	_lerpfn()
-	
 end
 
 function menu_input()
@@ -212,18 +210,43 @@ function menu_input()
 		btn_sprs[3]=110
 		btn_tmr=5
 		if m[2]=="start game" then
-			s_state="launch"
-			in_menu=false
-			init_level()
+			
+			init_start_game()
 		end
-		
 	end
+	
+end
+
+function init_start_game()
 	--🅾️ btn press timer
+	sg_tmr=0
+	in_menu=false
+	s_stat="launch"
+	s_clr=2
+	_upd=upd_start_game
+	init_circfade()
+end
+
+function upd_start_game()
 	if btn_tmr>0 then
 		btn_tmr-=1
 	else
 		btn_sprs[3]=94
 	end
+	if sg_tmr<6 then
+		sg_tmr+=1
+	else
+		if fade_dir == 1 then
+			init_eol(8)
+		end
+		
+	end
+	
+	--launch ship
+	--show sun
+	--init level
+	
+	--init_level()
 end
 
 function lerp_menu()
@@ -239,10 +262,6 @@ function lerp_menu()
 	end
 end
 
-function oline(x1,y1,x2,y2,c1,c2,xo,yo)
-	line(x1,y1,x2,y2,c1)
-	line(x1+xo,y1+yo,x2+xo,y2+yo,c2)
-end
 
 function drw_menu()
 	local oc1,oc2=8,2--cord colors
@@ -306,6 +325,11 @@ function drw_menu()
 		pset(116,80,0)
 		circ(110,80,1,13)
 		pset(110,80,0)
+		
+		circ(32,80,1,13)
+		pset(32,80,0)
+		circ(26,80,1,13)
+		pset(26,80,0)
 		--r console
 		roundrect(108,85,19,29,6,0)
 		local ct=1
@@ -492,11 +516,12 @@ end
 
 function drw_fruit()
 	--fruit
+	local l,d=sclrl[level],sclrd[level]
 	for t in all(fruits) do
-		circfill(t.x+4,t.y+4,2,sclrd[level])
-		rectfill(t.x+3,t.y+3,t.x+5,t.y+5,sclrl[level])
+		circfill(t.x+4,t.y+4,2,l)
+		rectfill(t.x+3,t.y+3,t.x+5,t.y+5,d)
 		pset(t.x+3,t.y+3,7)
-		fire(t.x+5,t.y+5,0,-0.5,2,3,f3c)
+		fire(t.x+5,t.y+5,0,-0.5,2,3,{l,l,l,d})
 	end
 	--fruitlet
 	for fl in all(fruitlet) do
@@ -852,7 +877,7 @@ function finish_dots()
 end
 -->8
 --end of level
-function init_eol()
+function init_eol(_e)
 	s_tmr=0
 	dk_tmr=0--dock
 	m_off=80
@@ -866,11 +891,21 @@ function init_eol()
 	w_off=-100
 	init_plerp()
 	d_plyr=drw_player--draw fn
-	e_state=0
+	fl_state=true--jump to middle of eol
+	if _e then
+		fl_state=false
+		e_state=_e
+		m_off=120
+		d_plyr=blank
+		mv_plyr=false
+	else
+		e_state=0	
+	end
 	eol_mask=10
 	ismask=true
 	fl_off=-20
 	sun_off=140
+	gen_tmr=0
 	_upd=upd_eol
 	_drw=drw_eol
 end
@@ -883,26 +918,27 @@ function upd_eol()
 			e_state=1
 		end
 	end
-	
-	if mv_plyr then
-		p_lerp(74,72)
-	else
-		s_tmr=min(s_tmr+1,90)
-		if s_tmr==60 then
-			temp_points=mult*temp_points
-			mult=1
-			score_intensity=0.5
-			sfx(11)
-		elseif s_tmr>=90 then
-			if temp_points > 0 then
-				if temp_points > 50 then
-					points+=50
-					temp_points-=50
-				else
-					points+=temp_points
-					temp_points-=temp_points
+	if fl_state then
+		if mv_plyr then
+			p_lerp(74,72)
+		else
+			s_tmr=min(s_tmr+1,90)
+			if s_tmr==60 then
+				temp_points=mult*temp_points
+				mult=1
+				score_intensity=0.5
+				sfx(11)
+			elseif s_tmr>=90 then
+				if temp_points > 0 then
+					if temp_points > 50 then
+						points+=50
+						temp_points-=50
+					else
+						points+=temp_points
+						temp_points-=temp_points
+					end
+					sfx(12)
 				end
-				sfx(12)
 			end
 		end
 	end
@@ -975,6 +1011,7 @@ function upd_eol()
 		--warp out
 		p_y=max(p_y-5,30)
 		if p_y==30 then
+			level+=1
 			d_plyr=blank
 			e_state =7
 			gen_tmr=0
@@ -1041,7 +1078,6 @@ function upd_eol()
 	end
 	if e_state==13 then
 		if level < #levels then
-			level+=1
 			_upd=upd_level
 			_drw=drw_level
 			fuel_mask_r=fuel_mask_mx
@@ -1460,6 +1496,11 @@ function roundrect(_x,_y,_w,_h,_oc,_ic)--draws box with round corner
 	rectfill(_x+1,_y,_x+max(_w-1,0)-1,_y+max(_h-1,0),_oc)
 	rectfill(_x+1,_y+2,_x+max(_w-1,0)-1,_y+max(_h-1,0)-2,_ic)
 	rectfill(_x+2,_y+1,_x+max(_w-1,0)-2,_y+max(_h-1,0)-1,_ic)
+end
+
+function oline(x1,y1,x2,y2,c1,c2,xo,yo)
+	line(x1,y1,x2,y2,c1)
+	line(x1+xo,y1+yo,x2+xo,y2+yo,c2)
 end
 
 function oprint(_t,_x,_y,_main_c,_shadow_c)
