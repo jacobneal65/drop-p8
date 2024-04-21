@@ -6,7 +6,7 @@ __lua__
 --by olivander65
 function _init()
 	v="1"
-	level=1
+	level=4
 	wave=1
 	t=0
 	debug={""}
@@ -19,7 +19,7 @@ function _init()
 	bshv_c={7,12,12,12}
 	warp_c={7,11,11,3}
 	--sun class
-	sclrl={ 7,10,9}
+	sclrl={7,10,9}
 	sclrd={12, 9,2}
 	scls={"b","k","m"}
 	sgtyp={"irregular","normal","incongruent"}
@@ -492,8 +492,8 @@ end
 function drw_fruit()
 	--fruit
 	for t in all(fruits) do
-		circfill(t.x+4,t.y+4,2,12)
-		rectfill(t.x+3,t.y+3,t.x+5,t.y+5,9)
+		circfill(t.x+4,t.y+4,2,sclrd[level])
+		rectfill(t.x+3,t.y+3,t.x+5,t.y+5,sclrl[level])
 		pset(t.x+3,t.y+3,7)
 		fire(t.x+5,t.y+5,0,-0.5,2,3,f3c)
 	end
