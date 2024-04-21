@@ -6,7 +6,7 @@ __lua__
 --by olivander65
 function _init()
 	v="1"
-	level=1
+	level=4
 	wave=1
 	t=0
 	debug={""}
