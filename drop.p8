@@ -240,6 +240,7 @@ function upd_start_game()
 	else
 		if fade_dir == 1 then
 			init_eol(8)
+			music(0,1000)
 		end
 		
 	end
