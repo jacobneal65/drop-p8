@@ -131,9 +131,7 @@ function _draw()
 end
 
 function init_menu()
-music(16,100)
-	_upd=upd_menu
-	_drw=drw_menu
+	music(16,100)
 	sun_off=-140
 	gen_tmr=0
 	init_fruitlet()
@@ -148,6 +146,10 @@ music(16,100)
 	rnd_char={}
 	gen_char()
 	btn_tmr=0
+	ship_tmr=0
+	ship_turn=false
+	_upd=upd_menu
+	_drw=drw_menu
 end
 
 function gen_char()
@@ -158,6 +160,14 @@ function gen_char()
 end
 
 function upd_menu()
+	--ship animation
+	if ship_tmr<60 then
+		ship_tmr+=1
+	else
+		ship_turn=not ship_turn
+		ship_tmr=0
+	end
+
 	if gen_tmr==1 then
 		menu_input()
 	end
@@ -292,7 +302,12 @@ function drw_menu()
 	
 	--ship ui
 	roundrect(8,78,16,16,6,0)
-	spr(p_spr,12,82)
+	if ship_turn then
+		spr(p_spr+1,11,82)
+	else
+		spr(p_spr,12,82)
+	end
+	
 	
 	--central menu screen
 	local iclr={3,11,3,3}--menu color
