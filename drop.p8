@@ -6,9 +6,7 @@ __lua__
 --by olivander65
 function _init()
 	v="1"
-	level=1
-	wave=1
-	level=1
+	level=3
 	wave=7
 	t=0
 	debug={""}
@@ -21,10 +19,10 @@ function _init()
 	bshv_c={7,12,12,12}
 	warp_c={7,11,11,3}
 	--sun class
-	sclrl={7,10,9}
-	sclrd={12, 9,2}
-	scls={"b","k","m"}
-	sgtyp={"irregular","normal","incongruent"}
+	sclrl={7,10,9,8}
+	sclrd={12,9,2,14}
+	scls={"b","k","m","g"}
+	sgtyp={"irregular","normal","incongruent","variable"}
 	intro_sun = f_rnd(3)+1
 	--player
 	p_x=64
@@ -1080,7 +1078,7 @@ function upd_eol()
 		end
 	end
 	if e_state==13 then
-		if level < #levels then
+		if level <= #levels then
 			_upd=upd_level
 			_drw=drw_level
 			fuel_mask_r=fuel_mask_mx
