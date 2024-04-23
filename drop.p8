@@ -146,8 +146,9 @@ function init_menu()
 	rnd_char={}
 	gen_char()
 	btn_tmr=0
-	ship_tmr=0
-	ship_turn=false
+	--menu ship
+	ship_off=0
+	
 	_upd=upd_menu
 	_drw=drw_menu
 end
@@ -160,13 +161,9 @@ function gen_char()
 end
 
 function upd_menu()
-	--ship animation
-	if ship_tmr<60 then
-		ship_tmr+=1
-	else
-		ship_turn=not ship_turn
-		ship_tmr=0
-	end
+
+	--ship state
+	
 
 	if gen_tmr==1 then
 		menu_input()
@@ -248,15 +245,8 @@ function upd_start_game()
 		if fade_dir == 1 then
 			init_eol(8)
 			music(0,1000)
-		end
-		
+		end	
 	end
-	
-	--launch ship
-	--show sun
-	--init level
-	
-	--init_level()
 end
 
 function lerp_menu()
@@ -301,14 +291,15 @@ function drw_menu()
 	
 	
 	--ship ui
-	roundrect(8,78,16,16,6,0)
-	if ship_turn then
-		spr(p_spr+1,11,82)
-	else
-		spr(p_spr,12,82)
+	roundrect(8,78,16,15,6,0)
+	for i=1,6 do
+			line(9,78+i*2,22,78+i*2,1)
 	end
 	
-	
+	spr(p_spr,12,81+ship_off)
+	if not in_menu then
+		spr(get_frame({5,6,7,6,5},1),12,89+ship_off)
+	end
 	--central menu screen
 	local iclr={3,11,3,3}--menu color
 	for i=1,#m do
@@ -710,7 +701,6 @@ function update_fruit()
 				del(fruits,fruit)
 			end
 		end		
-
 		--got all fruit
 		if #fruits==0 then
 			fr_spr=36
@@ -718,8 +708,13 @@ function update_fruit()
 			fruit_chain=0
 			--no more waves in level
 			if wave > #levels[level] then
-				wave=1
-				_upd=init_eol--end of lvl
+				if level==#levels then
+					--gameover
+					debug[1]="game over"
+				else
+					wave=1
+					_upd=init_eol--end of lvl
+				end
 			else
 				init_fruit_wave()
 			end		
@@ -1128,7 +1123,6 @@ end
 
 function drw_eol()
 	draw_sun()
-	
 	d_plyr()
 	draw_fuel()
 	drw_eol_mask()
