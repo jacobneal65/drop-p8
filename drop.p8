@@ -148,7 +148,8 @@ function init_menu()
 	btn_tmr=0
 	--menu ship
 	ship_off=0
-	
+	--screen
+	screen_offset=0
 	_upd=upd_menu
 	_drw=drw_menu
 end
@@ -161,8 +162,6 @@ function gen_char()
 end
 
 function upd_menu()
-
-	--ship state
 
 	if gen_tmr==1 then
 		menu_input()
@@ -216,9 +215,12 @@ function menu_input()
 		btn_tmr=5
 		if m[2]=="start game" then
 			init_start_game()
-		end
-		if m[2]=="ship cust" then
-			
+		elseif m[2]=="ship cust" then
+			sc_tmr=0
+			sc_dir=1
+			_upd=upd_ship_cust
+		elseif m[2]=="help" then
+						
 		end
 	end
 	
@@ -226,14 +228,23 @@ end
 
 function upd_ship_cust()
 	btn_reset()
-	drop_screen()
+	move_screen(sc_dir)
+	if btnp(🅾️) then
+		sc_dir=-1
+		sc_tmr=0
+	end
 end
 
-function drop_screen()
-	if screen_up then
+function move_screen(dir)
+	sc_tmr=min(sc_tmr+0.04,1)
+	local _t=easeoutquart(sc_tmr)
+	if dir==1 then
+		screen_offset=lerp(0,80,_t)
 		--+= screen offset
-		--if screen offset is the value
-		--screen_up=false
+	elseif dir==-1 then
+		screen_offset=lerp(80,0,_t)
+	end
+	if sc_tmr==1 then
 	end
 end
 
@@ -280,7 +291,6 @@ function lerp_menu()
 	end
 end
 
-
 function drw_menu()
 	local oc1,oc2=8,2--cord colors
 	draw_fx()
@@ -289,10 +299,15 @@ function drw_menu()
 	local q = {"jupiter","collection"}
 	oprint(q[1],hcenter(q[1])+sun_off+60,15,7,13)
 	oprint(q[2],hcenter(q[2])+sun_off+60,23,7,13)
+	--screen drop
+		rectfill(0,0,128,screen_offset+1,0)
+		rectfill(0,0,128,screen_offset,1)	
+		
 	--widow
 	rect(0,0,127,75,6)
 	rect(1,1,126,74,1)
 	rectfill(0,76,128,128,5)
+
 	--wires
 	oline(0,85,45,85,oc1,oc2,0,1)
 	oline(65,105,100,105,oc1,oc2,0,1)
@@ -1476,6 +1491,11 @@ end
 function easeoutquad(t)
 	t-=1
 	return 1-t*t
+end
+
+function easeoutquart(t)
+	t-=1
+	return 1-t*t*t*t
 end
 
 function easeoutinquart(t)
