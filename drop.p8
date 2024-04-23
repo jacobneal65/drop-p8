@@ -23,7 +23,7 @@ function _init()
 	sclrd={12,9,2,14}
 	scls={"b","k","m","g"}
 	sgtyp={"variable","incongruent","normal","irregular"}
-	intro_sun = f_rnd(3)+1
+	intro_sun = f_rnd(4)+1
 	--player
 	p_x=64
 	p_y=100
@@ -163,7 +163,6 @@ end
 function upd_menu()
 
 	--ship state
-	
 
 	if gen_tmr==1 then
 		menu_input()
@@ -216,11 +215,26 @@ function menu_input()
 		btn_sprs[3]=110
 		btn_tmr=5
 		if m[2]=="start game" then
-			
 			init_start_game()
+		end
+		if m[2]=="ship cust" then
+			
 		end
 	end
 	
+end
+
+function upd_ship_cust()
+	btn_reset()
+	drop_screen()
+end
+
+function drop_screen()
+	if screen_up then
+		--+= screen offset
+		--if screen offset is the value
+		--screen_up=false
+	end
 end
 
 function init_start_game()
@@ -233,12 +247,16 @@ function init_start_game()
 	init_circfade()
 end
 
-function upd_start_game()
+function btn_reset()
 	if btn_tmr>0 then
 		btn_tmr-=1
 	else
 		btn_sprs[3]=94
 	end
+end
+
+function upd_start_game()
+	btn_reset()
 	if sg_tmr<6 then
 		sg_tmr+=1
 	else
@@ -291,10 +309,12 @@ function drw_menu()
 	
 	
 	--ship ui
+	local sy = max(t%4-2,0)
 	roundrect(8,78,16,15,6,0)
-	for i=1,6 do
-			line(9,78+i*2,22,78+i*2,1)
+	for i=1,5 do
+			line(9,78+i*2+sy,22,78+i*2+sy,1)
 	end
+	line(9+sy,90+sy,22-sy,90+sy,1)
 	
 	spr(p_spr,12,81+ship_off)
 	if not in_menu then
