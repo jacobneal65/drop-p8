@@ -135,7 +135,7 @@ function init_menu()
 	sun_off=-140
 	gen_tmr=0
 	init_fruitlet()
-	m={"endless mode","start game","ship cust","high scores"}
+	m={"help","start game","ship cust","high scores"}
 	my_off={0,0,0,0}
 	_lerpfn=blank
 	lerp_tmr=0
