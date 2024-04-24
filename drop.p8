@@ -52,6 +52,7 @@ function _init()
 	
 	t_blue=0--tank blue
 	points=0--points
+	high_score=0
 	b_points=0--blue points
 	b_amnt=0--#blue in wave
 	fr_ani=false
@@ -135,7 +136,7 @@ function init_menu()
 	sun_off=-140
 	gen_tmr=0
 	init_fruitlet()
-	m={"help","start game","ship cust","high scores"}
+	m={"help","start game","customize","reset score"}
 	my_off={0,0,0,0}
 	_lerpfn=blank
 	lerp_tmr=0
@@ -217,7 +218,7 @@ function menu_input()
 		sc_tmr,sc_dir=0,1
 		if m[2]=="start game" then
 			init_start_game()
-		elseif m[2]=="ship cust" then
+		elseif m[2]=="customize" then
 			_upd=upd_ship_cust
 		elseif m[2]=="help" then
 			_upd=upd_help
@@ -320,6 +321,10 @@ function drw_menu()
 	local q = {"jupiter","collection"}
 	oprint(q[1],hcenter(q[1])+sun_off+60,15,7,13)
 	oprint(q[2],hcenter(q[2])+sun_off+60,23,7,13)
+		--high score
+		roundrect(27,64,73,10,1,0)
+		hc="high score:"..high_score
+		print(hc,hcenter(hc),66,7)
 	--screen drop
 		rectfill(0,0,128,screen_offset+1,0)
 		rectfill(0,0,128,screen_offset,1)	
@@ -407,18 +412,19 @@ function drw_menu()
 		local tx="property of orion corp"
 		print(tx,hcenter(tx),122,6)
 		print("v"..v,120,122,6)
+		
 	end	
 end
 
 function help_draw()
 	local txt={"fuel and pts","more fuel and pts","increase mult"}
 	for i=1,#txt do
-		print(txt[i],18,2+i*10,7)
+		print(txt[i],18,-4+i*10,7)
 	end
-	spr(get_frame({11,12,13},2),8,10)
- spr(get_frame({44,45,46,47},2),8,20)
-	frt_drw(8,30,2)
-	lprint("goal: collect as many points\nwhile keeping your fuel from\nrunning out",8,45,7,5)
+	spr(get_frame({11,12,13},2),8,4)
+ spr(get_frame({44,45,46,47},2),8,14)
+	frt_drw(8,24,2)
+	lprint("goal: collect as many points\nwhile keeping your fuel from\nrunning out.",8,45,9,0)
 	local et = "press 🅾️ to exit"
 	print(et,hcenter(et),68,6)
 end
@@ -592,7 +598,8 @@ end
 
 function drw_fruit()
 	--fruit
-	for t in all(fruits) do
+	local l,d=sclrl[level],sclrd[level]
+	for t in all(fruits) do	
 		frt_drw(t.x,t.y,level)
 		fire(t.x+5,t.y+5,0,-0.5,2,3,{l,l,l,d})
 	end
