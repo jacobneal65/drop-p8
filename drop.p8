@@ -360,7 +360,7 @@ function drw_menu()
 	
 	spr(p_spr,12,81)
 	if s_stat=="launch" then
-		spr(get_frame({5,6,7,6,5},1),12,89+ship_off)
+		spr(get_frame({5,6,7,6,5},1),12,89)
 	end
 	--central menu screen
 	local iclr={3,11,3,3}--menu color
