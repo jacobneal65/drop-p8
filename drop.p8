@@ -272,7 +272,6 @@ end
 function init_start_game()
 	--🅾️ btn press timer
 	sg_tmr=0
-	in_menu=false
 	s_stat="launch"
 	s_clr=2
 	_upd=upd_start_game
@@ -295,6 +294,7 @@ function upd_start_game()
 	else
 		if fade_dir == 1 then
 			init_eol(8)
+			in_menu=false
 			music(0,1000)
 		end	
 	end
