@@ -147,8 +147,7 @@ function init_menu()
 	rnd_char={}
 	gen_char()
 	btn_tmr=0
-	--menu ship
-	ship_off=0
+	
 	draw_help=false
 	--screen
 	screen_offset=0
@@ -319,8 +318,8 @@ function drw_menu()
 	drw_fruit()
 	draw_sun(intro_sun)
 	local q = {"jupiter","collection"}
-	oprint(q[1],hcenter(q[1])+sun_off+60,15,7,13)
-	oprint(q[2],hcenter(q[2])+sun_off+60,23,7,13)
+	oprint(q[1],hcenter(q[1])+sun_off+60,15,7,0)
+	oprint(q[2],hcenter(q[2])+sun_off+60,23,7,0)
 		--high score
 		roundrect(27,64,73,10,1,0)
 		hc="high score:"..high_score
@@ -359,8 +358,8 @@ function drw_menu()
 	end
 	line(9+sy,90+sy,22-sy,90+sy,1)
 	
-	spr(p_spr,12,81+ship_off)
-	if not in_menu then
+	spr(p_spr,12,81)
+	if s_stat=="launch" then
 		spr(get_frame({5,6,7,6,5},1),12,89+ship_off)
 	end
 	--central menu screen
