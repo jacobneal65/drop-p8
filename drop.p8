@@ -6,8 +6,6 @@ __lua__
 --by olivander65
 function _init()
 	v="1"
-	level=1
-	wave=1
 	t=0
 	debug={""}
 	effects={}
@@ -25,17 +23,11 @@ function _init()
 	sgtyp={"variable","incongruent","normal","irregular"}
 	intro_sun = f_rnd(4)+1
 	--player
-	p_x=64
-	p_y=100
 	p_spd=2.5
-	pc_spr=40
-	p_spr=40
 	--player ship options
 	p_spr_opt={40,3,38,54,56}
-	
 	--player offset l,r,b,t
 	p_o={-1,8,1,-7}
-	
 	fruits={}
 	fruitlet={}
 	t_spr=64 --fruit sprite
@@ -55,14 +47,21 @@ function _init()
 	
 	t_blue=0--tank blue
 	points=0--points
+	
+	--stuff to load from save file
 	high_score=0
+	endless_score=0
+	medal = false
+	p_spr=40
+	
+	pc_spr=p_spr
+	
 	b_points=0--blue points
 	b_amnt=0--#blue in wave
 	fr_ani=false
 	fr_spr=36
 	fr_tmr=0
 	
-	fuel=110--red tank
 	fuel_mx=110
 	low_fuel=false
 	fuel_mask_mx=91
@@ -71,12 +70,8 @@ function _init()
 	fl_spr=52
 	fl_tmr=0
 	fl_off=0
-	mult=1
-	mult_up=0
-	temp_points=0
-	
 	mult_sfx=1
-	fruit_chain=0
+	
 	tf_tmr=0--transfer timer
 	
 	poke(0x5f34, 0x2)--enable mask
@@ -106,7 +101,6 @@ function _init()
 	cam_x,cam_y=0,0
 	
  init_menu()
- in_menu=true
 end
 
 function blank() end
@@ -136,7 +130,14 @@ end
 
 function init_menu()
 	music(16,100)
+	in_menu=true
 	sun_off=-140
+	level=1
+	wave=1
+	p_x,p_y=64,100
+	mult,mult_up=1,0
+	temp_points=0
+	fruit_chain=0
 	gen_tmr=0
 	init_fruitlet()
 	m={"help","start game","customize","endless"}
@@ -153,6 +154,8 @@ function init_menu()
 	sel=0
 	draw_help=false
 	draw_cust=false
+	
+	game_over=false
 	--screen
 	screen_offset=0
 	_upd=upd_menu
@@ -250,36 +253,34 @@ end
 
 function upd_ship_cust()
 	move_screen(sc_dir)
-	--p_spr_opt sel
-	if btnp(🅾️) then
-		sfx(9)
-		btn_sprs[3],btn_tmr=110,5
-		sc_dir=-1
-		sc_tmr=0
-		draw_cust=false
-	end
-	if btnp(➡️) or btnp(⬇️) then
-		sfx(8)
-		sel+=1
-		if sel>#p_spr_opt then
-			sel=1
-		end
-		p_spr=p_spr_opt[sel]
-		btn_sprs[2]=109
-	end
-	if btnp(⬅️) or btnp(⬆️) then
-		sfx(8)
-		sel-=1
-		if sel<1 then
-			sel=#p_spr_opt
-		end
-		p_spr=p_spr_opt[sel]
-		btn_sprs[1]=108
-	end
-	
 	if sc_tmr==1 then
 		if sc_dir==1 then
 			draw_cust=true
+			if btnp(🅾️) then
+				sfx(9)
+				btn_sprs[3],btn_tmr=110,5
+				sc_dir=-1
+				sc_tmr=0
+				draw_cust=false
+			end
+			if btnp(➡️) or btnp(⬇️) then
+				sfx(8)
+				sel+=1
+				if sel>#p_spr_opt then
+					sel=1
+				end
+				p_spr=p_spr_opt[sel]
+				btn_sprs[2]=109
+			end
+			if btnp(⬅️) or btnp(⬆️) then
+				sfx(8)
+				sel-=1
+				if sel<1 then
+					sel=#p_spr_opt
+				end
+				p_spr=p_spr_opt[sel]
+				btn_sprs[1]=108
+			end
 		else
 			_upd=upd_menu
 		end
@@ -305,6 +306,7 @@ function init_start_game()
 	sg_tmr=0
 	s_stat="launch"
 	s_clr=2
+	fuel=10--red tank
 	_upd=upd_start_game
 	init_circfade()
 end
@@ -353,9 +355,11 @@ function drw_menu()
 	oprint(q[1],hcenter(q[1])+sun_off+60,15,7,0)
 	oprint(q[2],hcenter(q[2])+sun_off+60,23,7,0)
 		--high score
-		roundrect(27,63,73,11,1,0)
+		roundrect(22,53,83,21,1,0)
 		hc="high score:"..high_score
-		print(hc,hcenter(hc),66,7)
+		print(hc,hcenter(hc),56,7)
+		ec="endless score:"..endless_score
+		print(ec,hcenter(ec),66,7)
 	--screen drop
 		rectfill(0,0,128,screen_offset+1,0)
 		rectfill(0,0,128,screen_offset,1)	
@@ -439,12 +443,13 @@ function drw_menu()
 				ct+=1
 			end
 		end
-		
 		local tx="property of orion corp"
 		print(tx,hcenter(tx),122,6)
 		print("v"..v,120,122,6)
-		
 	end	
+	if medal then
+		spr(79,116,1,1,2)
+	end
 end
 
 function help_draw()
@@ -486,7 +491,8 @@ function upd_level()
 	fuel-=0.2
 	fuel=max(fuel,0)
 	if fuel <=0 then
-		debug[1]="out of fuel"
+		game_over=true
+		_upd=init_game_over
 	end
 	rst_pspr()
 
@@ -512,6 +518,69 @@ function upd_level()
 	--fruit
 	update_fruit()
 	update_fruitlet()
+end
+
+function init_game_over()
+	music(-1)
+	sfx(15)
+	eol_mask=10
+	ismask=true
+	fruits={}
+	fruitlet={}
+	dots={}
+	rst_pspr()
+	init_plerp()
+	mv_plyr=true
+	gen_tmr=0
+	s_tmr=0
+	_upd=upd_game_over
+	_drw=drw_game_over
+end
+
+function upd_game_over()
+	if mv_plyr then
+				p_lerp(60,72)
+	end
+	s_tmr=min(s_tmr+1,90)
+	if s_tmr >= 90 then
+		if temp_points > 0 then
+			if temp_points > 50 then
+				points+=50
+				temp_points-=50
+			else
+				points+=temp_points
+				temp_points-=temp_points
+			end
+			sfx(12)
+		end
+	elseif s_tmr == 60 then
+		temp_points=mult*temp_points
+		mult=1
+		score_intensity=0.5
+		sfx(11)
+	end	
+
+	if btnp(🅾️) and temp_points==0 then
+		init_circfade()
+	end
+	if fade_dir == 1 then
+			high_score=points
+			_upd=init_menu
+
+	end	
+end
+
+function drw_game_over()
+	drw_player()
+	drw_eol_mask()
+	rectfill(0,0,128,8,1)
+	draw_fx()
+	
+	drw_points()
+	local tx={"out of fuel","game over","press 🅾️ to return to menu"}
+	lprint(tx[1],hcenter(tx[1]),40,9,5)
+	lprint(tx[2],hcenter(tx[2]),50,9,5)
+	lprint(tx[3],hcenter(tx[3]),120,6,1)
 end
 
 function drw_level()
@@ -555,13 +624,17 @@ function draw_fuel()
 	 bigtank=flr(min(fuel,fuel_mx)/fuel_mx*36)
 	 for i=1,bigtank do
 	 	local _clr = min(2,1+i%3)+8
-	 	if bigtank < 10 then
-	 		_clr=max(1,(i%3-1)*7)+7
-	 		local txt="low fuel"
-	 		low_fuel=true
-	 		print(txt,hcenter(txt),64+sin(time()),8)
-	 		else
-	 			low_fuel=false
+	 	
+	 	if not ismask then
+		 	if bigtank < 10 then
+		 		_clr=max(1,(i%3-1)*7)+7
+		 	
+		 		local txt="low fuel"
+		 		low_fuel=true
+		 		print(txt,hcenter(txt),64+sin(time()),8)
+		 	else
+		 		low_fuel=false
+				end
 			end
 			line(3+_f,62-i,7+_f,62-i,_clr)
   end
@@ -1606,7 +1679,6 @@ function init_circfade()
 end
 
 function circfade()
-	--add 111
 	if fade_dir == -1 then
 		fade_r = max(fade_r-2,0)
 		if fade_r==0 then
@@ -1627,7 +1699,6 @@ function circfade()
 	if fade_r>1 then
 		circ(64,64,fade_r,5)
 	end
---	fade_dir
 end
 
 function roundrect(_x,_y,_w,_h,_oc,_ic)--draws box with round corner
@@ -1780,7 +1851,7 @@ __sfx__
 49010000320202f0200d0002a000140001c0003200025000000002c00028000300002300034000360003900015000100001000010000100000000000000000000000000000000000000000000000000000000000
 c1010000126500f650006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600
 490100001a0201a0201a0201702014020100200f0200e0200e0200f020100200e0200a0200802008020090200a0200c0200e0200c0200a0200a0200b0200d0201002012040130401204011040140401504015040
-0001000022650286502e6503165031650336503465035650366403762038610386103861039610396103961039610396103961039610396103961039610386103761036610316103161000600006000060000600
+0001000022650286502e65031050310503205033050330503404034020330103301032010310102f0102e0102c0102a01027010250102401022010200101f0101d0101c0101b0101a0101901019000190000d000
 000200000c0530f053110531305316053180531b0531d0531f0532205324053270532905329053290532905327053240531f0531f0531b05318053180531605316053180531b0531d0531f053240532705329053
 48100000177221c73221742267522d742317223472236722177221c73221732267322d73231732347323672223732217421f7522174225732287222572225722287222a7322b7422a7422674223732217221e722
 48100000177221c73221742267522d752317623476236722177221c72221732267222d73231732347423674236752347422f7522d74226732257321f7321e72236732347422f7422d75226752257321f7421e732
