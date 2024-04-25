@@ -132,6 +132,7 @@ function init_menu()
 	level=4
 	wave=7
 	music(16,1000)
+	endless=false--endless mode
 	in_menu=true
 	sun_off=-140
 	perfect=true
@@ -141,7 +142,7 @@ function init_menu()
 	fruit_chain=0
 	gen_tmr=0
 	init_fruitlet()
-	m={"help","start game","endless","customize"}
+	m={"help","start game","fuel rush","customize"}
 	my_off={0,0,0,0}
 	_lerpfn=blank
 	lerp_tmr=0
@@ -230,7 +231,11 @@ function menu_input()
 			end
 		elseif m[2]=="help" then
 			_upd=upd_help
+		elseif m[2]=="fuel rush" then
+			endless=true
+			init_start_game()
 		end
+		
 	end
 end
 
@@ -308,6 +313,8 @@ function init_start_game()
 	s_stat="launch"
 	s_clr=2
 	fuel=fuel_mx--red tank
+	fuel_drain=0.2
+	fuel_tmr=0
 	_upd=upd_start_game
 	init_circfade()
 end
@@ -359,7 +366,7 @@ function drw_menu()
 		roundrect(22,53,83,21,1,0)
 		hc="main score:"..high_score
 		print(hc,hcenter(hc),56,7)
-		ec="endless score:"..endless_score
+		ec="fuel rush score:"..endless_score
 		print(ec,hcenter(ec),66,7)
 	--screen drop
 		rectfill(0,0,128,screen_offset+1,0)
@@ -481,7 +488,9 @@ end
 -->8
 --level
 function init_level()
-	init_fruit_wave()
+	if not endless then
+		init_fruit_wave()
+	end
  init_fruitlet()
  music(1,1000)
  _upd=upd_level
@@ -489,7 +498,14 @@ function init_level()
 end
 
 function upd_level()
-	fuel-=0.2
+	fuel-=fuel_drain
+	if endless then
+		fuel_tmr+=1
+		if fuel_tmr==300 then
+			fuel_tmr=0
+			fuel_drain+=0.1
+		end
+	end
 	fuel=max(fuel,0)
 	if fuel <=0 then
 		game_over=true
@@ -517,7 +533,9 @@ function upd_level()
 	if (p_y > 120) p_y=120
 	if (p_y < 16) p_y=17
 	--fruit
-	update_fruit()
+	if not endless then
+		update_fruit()
+	end
 	update_fruitlet()
 end
 
@@ -566,7 +584,11 @@ function upd_game_over()
 	end
 	
 	if fade_dir == 1 then
+		if endless then
+			endless_score=points
+		else
 			high_score=points
+		end
 			_upd=init_menu
 	end	
 end
@@ -695,7 +717,10 @@ function rst_pspr()
 end
 
 function drw_points()
-	local _lvl="level: "..level
+	_lvl="level: "..level
+	if endless then
+		_lvl="fuel drain:"..fuel_drain
+	end
  print(_lvl,hcenter(_lvl),2,7)
 	--points
 	spr(get_frame(ss_ani,2),0,0)
@@ -1230,6 +1255,7 @@ function upd_eol()
 				high_score=points
 			 end_draw=true
 			 w_off=-40
+			 end_tmr=0
 				_upd=game_end
 			else
 				e_state =7
@@ -1353,7 +1379,7 @@ function draw_mothership()
 	local mx,my=16,32
 	spr(64,mx,my+m_off,6,10)
 	fire(mx+11,my+72+m_off,0,0.5,6,6,f3c)
-	fire(mx+39,my+72+m_off,0,0.5,6,6,f3c)
+	fire(mx+38,my+72+m_off,0,0.5,6,6,f3c)
 	spr(dock_spr,mx+45,my+42+m_off)
 end
 
@@ -1399,10 +1425,10 @@ function game_end()
 	if btnp(🅾️) then
 		init_circfade()
 	end
-	
+	end_tmr=min(end_tmr+0.01,1)
 	if fade_dir == 1 then
 			_upd=init_menu
-	end	
+	end
 end
 
 function draw_end()
@@ -1411,9 +1437,12 @@ function draw_end()
 	lprint(tx[1],hcenter(tx[1]),40+st,9,5)
 	lprint(tx[2],hcenter(tx[2]),50+st,9,5)
 	lprint(tx[3],hcenter(tx[3]),120,6,1)
+	local ey={90,80,70,80,90}
 	for i = 1,#p_spr_opt do
-		spr(p_spr_opt[i],30+i*10,70)
-		spr(get_frame({5,6,7,6,5},1),30+i*10,78)
+		local _t=easeoutquad(end_tmr)
+		ly=lerp(ey[i]+60,ey[i],_t)
+		spr(p_spr_opt[i],14+i*15,ly)
+		spr(get_frame({5,6,7,6,5},1),14+i*15,ly+8)
 	end
 	if medal then
 		local pt="perfect!!!"
