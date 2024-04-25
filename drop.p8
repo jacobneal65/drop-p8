@@ -141,7 +141,7 @@ function init_menu()
 	fruit_chain=0
 	gen_tmr=0
 	init_fruitlet()
-	m={"help","start game","customize","endless"}
+	m={"help","start game","endless","customize"}
 	my_off={0,0,0,0}
 	_lerpfn=blank
 	lerp_tmr=0
