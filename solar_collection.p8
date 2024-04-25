@@ -60,8 +60,6 @@ function _init()
 	
 	pc_spr=p_spr
 	
-	b_points=0--blue points
-	b_amnt=0--#blue in wave
 	fr_ani=false
 	fr_spr=36
 	fr_tmr=0
@@ -155,6 +153,8 @@ end
 function init_menu()
 	level=1
 	wave=1
+	b_points=0--blue points
+	b_amnt=0--#blue in wave
 	t_blue=0--tank blue
 	points=0--points
 	music(16,1000)
@@ -206,9 +206,7 @@ function upd_menu()
 	local _tmr=easeinoutovershoot(gen_tmr)
 	sun_off=lerp(-150,-60,_tmr)
 	menu_y=lerp(150,76,_tmr)
-	if false then
-		init_level()
-	end
+	
 	if gen_tmr==1 then
 		update_fruitlet()
 	end
@@ -529,12 +527,12 @@ function cust_draw()
 end
 -->8
 --level
+
 function init_level()
 	if not endless then
 		init_fruit_wave()
 	end
  init_fruitlet()
- music(1,1000)
  _upd=upd_level
 	_drw=drw_level
 end
@@ -851,8 +849,10 @@ function init_fruit_wave()
 		local amt,_typ=10,wv[1]
 		if _typ==3 then
 			amt=5
-		elseif _typ==5 then
+		elseif _typ==4 then
 			amt=20
+		elseif _typ==8 or _typ==7 then
+			amt=8
 		end
 		t_blue+=amt
 	end	
@@ -2158,6 +2158,7 @@ __music__
 00 41424344
 00 41424344
 00 41424344
+00 5c1e1f60
 01 5c1e1f20
 00 1c1e1f44
 00 5c1e1f20
