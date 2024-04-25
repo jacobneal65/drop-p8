@@ -5,6 +5,10 @@ __lua__
 --solar collection
 --by olivander65
 function _init()
+	cartdata("solar_collection")
+	menuitem(1, "clear cart",
+		function() clear_cart() extcmd("reset") end
+	)
 	v="1"
 	t=0
 	debug={""}
@@ -51,6 +55,8 @@ function _init()
 	medal = false
 	medal2 = false
 	p_spr=40
+	
+	load_data()
 	
 	pc_spr=p_spr
 	
@@ -101,6 +107,26 @@ function _init()
  init_menu()
 end
 
+function clear_cart()
+	for i=0,10 do
+		dset(i,0)--reset cart data
+	end
+end
+
+function load_data()
+	high_score = dget(0)
+	endless_score=dget(1)
+	if dget(2)==1 then
+		medal = true
+	end
+	if dget(3)==1 then
+		medal2 = true
+	end
+	if dget(4)>0 then
+		p_spr=dget(4)
+	end
+end
+
 function blank() end
 
 function _update()
@@ -127,8 +153,8 @@ function _draw()
 end
 
 function init_menu()
-	level=4
-	wave=7
+	level=1
+	wave=1
 	t_blue=0--tank blue
 	points=0--points
 	music(16,1000)
@@ -276,6 +302,7 @@ function upd_ship_cust()
 					sel=1
 				end
 				p_spr=p_spr_opt[sel]
+				dset(4,p_spr)
 				btn_sprs[2]=109
 			end
 			if btnp(⬅️) or btnp(⬆️) then
@@ -285,6 +312,7 @@ function upd_ship_cust()
 					sel=#p_spr_opt
 				end
 				p_spr=p_spr_opt[sel]
+				dset(4,p_spr)
 				btn_sprs[1]=108
 			end
 		else
@@ -598,11 +626,18 @@ function upd_game_over()
 	if fade_dir == 1 then
 		if endless then
 			endless_score=points
+			if endless_score>dget(1) then
+				dset(1,endless_score)
+			end
 			if endless_score>=900 then
 				medal2=true
+				dset(3,1)
 			end
 		else
 			high_score=points
+			if high_score>dget(0) then
+				dset(0,high_score)
+			end
 		end
 			_upd=init_menu
 	end	
@@ -1266,6 +1301,7 @@ function upd_eol()
 			if level > #levels then	
 				if perfect then
 					medal=true
+					dset(2,1)
 				end
 				level-=1
 				music(24,1000)
