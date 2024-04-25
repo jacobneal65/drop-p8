@@ -4,13 +4,20 @@ __lua__
 --solar collection
 --by olivander65
 function _init()
-	cartdata("solar_collection")
-	menuitem(1, "clear cart",
-		function() clear_cart() extcmd("reset") end
-	)
-	showver=true--used to make cart image
 	v="1"
 	t=0
+	cartdata("solar_collection")
+	menuitem(1,"start game", function() init_start_game() end)
+	menuitem(2, "█clear cart█",
+		function() clear_cart() extcmd("reset") end
+	)
+	
+	b_points=0--blue points
+	b_amnt=0--#blue in wave
+	t_blue=0--tank blue
+	points=0--points
+	showver=true--used to make cart image
+	
 	debug={""}
 	effects={}
 	--two flame effects
@@ -153,12 +160,9 @@ end
 function init_menu()
 	level=1
 	wave=1
-	b_points=0--blue points
-	b_amnt=0--#blue in wave
-	t_blue=0--tank blue
-	points=0--points
 	music(16,1000)
 	endless=false--endless mode
+	
 	in_menu=true
 	sun_off=-140
 	perfect=true
@@ -528,6 +532,14 @@ end
 -->8
 --level
 function init_level()
+	mult,mult_up=1,0
+	b_points=0--blue points
+	b_amnt=0--#blue in wave
+	t_blue=0--tank blue
+	points=0--points
+	temp_points=0
+	fruit_chain=0
+	gen_tmr=0
 	if not endless then
 		init_fruit_wave()
 	end
