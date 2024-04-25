@@ -131,7 +131,7 @@ end
 function init_menu()
 	level=4
 	wave=7
-	music(16,100)
+	music(16,1000)
 	in_menu=true
 	sun_off=-140
 	perfect=true
@@ -483,7 +483,7 @@ end
 function init_level()
 	init_fruit_wave()
  init_fruitlet()
- music(1)
+ music(1,1000)
  _upd=upd_level
 	_drw=drw_level
 end
@@ -1414,6 +1414,11 @@ function draw_end()
 	for i = 1,#p_spr_opt do
 		spr(p_spr_opt[i],30+i*10,70)
 		spr(get_frame({5,6,7,6,5},1),30+i*10,78)
+	end
+	if medal then
+		local pt="perfect!!!"
+		lprint(pt,hcenter(pt),12,9,5)
+		spr(79,90,9,1,2)
 	end
 end
  
