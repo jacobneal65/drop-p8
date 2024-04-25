@@ -1298,7 +1298,7 @@ function upd_eol()
 			debug[1]="no more levels"
 			if perfect then
 				medal=true
-				--ship teleports out
+				--ship teleports outs
 			end
 		end
 	end
