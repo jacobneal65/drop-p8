@@ -527,7 +527,6 @@ function cust_draw()
 end
 -->8
 --level
-
 function init_level()
 	if not endless then
 		init_fruit_wave()
@@ -669,7 +668,7 @@ function drw_level()
 	drw_fruit()
 	drw_points()
 end
-
+--low fuel mask
 function drw_circ_mask()
 	if low_fuel then
 		fuel_mask_r=max(fuel_mask_r-1,79)
@@ -1382,11 +1381,8 @@ function upd_eol()
 		end
 	end
 	if e_state==13 then		
-			_upd=upd_level
-			_drw=drw_level
 			fuel_mask_r=fuel_mask_mx
-			init_fruitlet()
-			init_fruit_wave()
+			init_level()
 	end
 end
 
@@ -1813,8 +1809,9 @@ function init_circfade()
 end
 
 function circfade()
+	local amt=3
 	if fade_dir == -1 then
-		fade_r = max(fade_r-2,0)
+		fade_r = max(fade_r-amt,0)
 		if fade_r==0 then
 			pset(64,64,1)
 			fade_tmr+=1
@@ -1823,7 +1820,7 @@ function circfade()
 			end
 		end
 	elseif fade_dir==1 then
-		fade_r=min(fade_r+2,100)
+		fade_r=min(fade_r+amt,100)
 		if fade_r==100 then
 			fadding = false
 			fade_dir = 0
