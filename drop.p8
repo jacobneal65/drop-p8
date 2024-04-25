@@ -132,6 +132,7 @@ function init_menu()
 	music(16,100)
 	in_menu=true
 	sun_off=-140
+	perfect=true
 	level=1
 	wave=1
 	p_x,p_y=64,100
@@ -896,6 +897,7 @@ function update_fruit()
 			if fruit.y>t_ybnd
 			or fruit.y<=t_uybnd
 			then
+				perfect=false
 				del(fruits,fruit)
 			end
 		end		
@@ -1294,6 +1296,10 @@ function upd_eol()
 			
 		else
 			debug[1]="no more levels"
+			if perfect then
+				medal=true
+				--ship teleports out
+			end
 		end
 	end
 
