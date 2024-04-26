@@ -9,8 +9,8 @@ function _init()
 	showver=true--used to make cart image
 	
 	cartdata("solar_collection")
-	menuitem(1,"start game", function() init_start_game() end)
-	menuitem(2, "█clear cart█",
+	menuitem(1,"restart story", function() init_start_game() end)
+	menuitem(2, "█wipe cart█",
 		function() clear_cart() extcmd("reset") end
 	)
 	
@@ -170,7 +170,7 @@ function clear_score()
 	b_amnt=0--#blue in wave
 	t_blue=0--tank blue
 	points=0--points
-	level,wave=1,1
+	level,wave=4,7
 	perfect=true
 	dots={}
 	fruits={}
@@ -755,10 +755,10 @@ end
 
 function draw_fuel()
 		local _f=fl_off
-		roundrect(1+_f,14,9+_f,9,5,2)
+		roundrect(1+_f,14,9,9,5,2)
 		print("f",4+_f,17,1)
 		print("f",4+_f,16,9)
- 	roundrect(2+_f,24,7+_f,40,5,6)
+ 	roundrect(2+_f,24,7,40,5,6)
  	line(6+_f,25,4+_f,25,1)
  	line(6+_f,62,4+_f,62,1)
  	
@@ -1232,6 +1232,7 @@ end
 --end of level
 function init_eol(_e)
 	s_tmr=0
+	end_dly=0
 	dk_tmr=0--dock
 	m_off=80
 	mv_plyr=true
@@ -1256,12 +1257,12 @@ function init_eol(_e)
 	end
 	eol_mask=10
 	ismask=true
-	fl_off=-20
+	fl_off=-40
 	sun_off=140
 	gen_tmr=0
 	
 	end_draw=false
-
+	perfpuff=false
 	_upd=upd_eol
 	_drw=drw_eol
 end
@@ -1269,6 +1270,13 @@ end
 function upd_eol()
 	--lerp the player to middle
 	if e_state == 0 then
+		if perfect and not perfpuff then
+			local pf={10,10,7,7}
+			puff(40,18,pf)
+			puff(80,18,pf)
+			perfpuff = true
+			sfx(26)
+		end
 		m_off=max(0,m_off-1)
 		if m_off == 0 then
 			e_state=1
@@ -1560,14 +1568,20 @@ function save_h_score()
 end
 
 function init_game_end()
-	music(24,1000)
-	save_h_score()
-	--prepare game end
- end_draw=true
- w_off=-40
- end_tmr=0
- btn_prsd=false
- _upd=game_end
+	w_off=-40
+	if end_dly<60 then
+		end_dly+=1
+	else
+		music(24,1000)
+		save_h_score()
+		--prepare game end
+	 end_draw=true
+	 end_tmr=0
+	 btn_prsd=false
+	 end_dly=0
+	 _upd=game_end
+	end
+	
 end
 
 function game_end()
@@ -1582,14 +1596,15 @@ function game_end()
 end
 
 function draw_end()
+	local _t=easeoutquad(end_tmr)
 	local st=sin(time())
-	local tx={"you win!!","thanks for playing","press 🅾️ to return to menu"}
-	lprint(tx[1],hcenter(tx[1]),40+st,9,5)
-	lprint(tx[2],hcenter(tx[2]),50+st,9,5)
-	lprint(tx[3],hcenter(tx[3]),120,6,1)
+	local l1,l2,l3=lerp(-88,40,_t),lerp(-78,50,_t),lerp(140,120,_t)
+	local tx={"you win!!","thanks for playing 🐱","press 🅾️ to return to menu"}
+	lprint(tx[1],hcenter(tx[1]),l1+st,9,5)
+	lprint(tx[2],hcenter(tx[2]),l2+st,9,5)
+	lprint(tx[3],hcenter(tx[3]),l3,6,1)
 	local ey={90,80,70,80,90}
 	for i = 1,#p_spr_opt do
-		local _t=easeoutquad(end_tmr)
 		ly=lerp(ey[i]+60,ey[i],_t)
 		spr(p_spr_opt[i],14+i*15,ly)
 		spr(get_frame({5,6,7,6,5},1),14+i*15,ly+8)
@@ -2211,7 +2226,7 @@ c1010000126500f65000600006000060000600006000060000600006000060000600006000060000
 011c00001f032180321f032180021f0321f0321f0321d032180321d032200321d0322003224032200321d0321b032200322203220002220322203222032200321d032200321b0321d032180321b0321603218032
 011c00000063500635296350f6350063500635296351c00500635006352963518005006350063529635180050063500635296351c005006350063529635126350063500635296351a00500635006352963129635
 a11c00000047500475004750047500475004750047500475004750047500475004750047500475004750047500475004750047500475004750047500475004750047500475004750047500475004750047500475
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000200000c05011050160501b0501f05024050270502b05027050240501f0501b05013050110500f050110500c0500a0500705007050070500a0500c0501105011050160501b0501d0501f05022050290502b050
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 a91000000e05513055170551a0551c05521055230552405526051280512d0522805226055230551f0551c05518055170551f055150522105215055170511a0551d0551f0551d0551a05117052130521f05513055
 a9100000280552b0552805526055210551f055230552805528055260552605523055210551f0551c0551a0551805517055150551f0511a0551505517055180511c055230551f0551d0511c0551c0551d0511d055
