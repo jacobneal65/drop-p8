@@ -52,10 +52,10 @@ function _init()
 	b_arr={}--bezier array
 	--pattern,sx,end_x,bez_arr
 	levels={
-		{{0,8,64},{1,64,120},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}},{1,64,120},{0,8,64},{3,0,0}},
-		{{2,0,60},{3,0,0},{2,0,60},{4,40,80},{4,40,80},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}}},
+		{{0,8,64},{1,64,120},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,150,32,64,140}},{1,64,120},{0,8,64},{3,0,0}},
+		{{2,0,60},{3,0,0},{4,40,80},{2,0,60},{4,40,80},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,150,32,64,140}}},
 		{{8,80,80},{7,80,80},{9,70,100},{3,0,0},{9,70,100},{8,80,80},{7,80,80}},
-		{{6,0,0,{120,-10,-20,184,-20,-56,120,129}},{6,0,0,{64,-10,180,120,-60,120,64,-11}},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,168,32,64,140}},{6,0,0,{120,-10,0,120,0,-120,120,129}},{6,0,0,{0,-10,120,184,120,-56,0,129}},{7,80,80}},
+		{{6,0,0,{120,-10,-20,184,-20,-56,120,129}},{6,0,0,{64,-10,180,120,-60,120,64,-11}},{5,32,64,{64,-10,-40,32,64,140}},{5,32,64,{64,-10,150,32,64,140}},{6,0,0,{120,-10,0,120,0,-120,120,129}},{6,0,0,{0,-10,120,184,120,-56,0,129}},{7,80,80}}
 	}
 	
 	--stuff to load from save file
@@ -169,13 +169,13 @@ function clear_score()
 	b_amnt=0--#blue in wave
 	t_blue=0--tank blue
 	points=0--points
+	level,wave=1,4
+	dots={}
 	fruits={}
 	fruitlet={}
 end
 
 function init_menu()
-	level=1
-	wave=1
 	music(16,1000)
 	endless=false--endless mode
 	
@@ -651,6 +651,7 @@ function init_game_over()
 	mv_plyr=true
 	gen_tmr=0
 	s_tmr=0
+	btn_prsd=false
 	_upd=upd_game_over
 	_drw=drw_game_over
 end
@@ -678,8 +679,9 @@ function upd_game_over()
 		sfx(11)
 	end	
 
-	if btnp(🅾️) and temp_points==0 then
+	if btnp(🅾️) and temp_points==0 and not btn_prsd then
 		init_circfade()
+		btn_prsd=true
 	end
 	
 	if fade_dir == 1 then
@@ -712,7 +714,9 @@ function drw_game_over()
 	local tx={"out of fuel","game over","press 🅾️ to return to menu"}
 	lprint(tx[1],hcenter(tx[1]),40,9,5)
 	lprint(tx[2],hcenter(tx[2]),50,9,5)
-	lprint(tx[3],hcenter(tx[3]),120,6,1)
+	if temp_points==0 then
+		lprint(tx[3],hcenter(tx[3]),120,6,1)
+	end
 end
 
 function drw_level()
@@ -1370,6 +1374,7 @@ function upd_eol()
 			 end_draw=true
 			 w_off=-40
 			 end_tmr=0
+			 btn_prsd=false
 				_upd=game_end
 			else
 				e_state =7
@@ -1467,6 +1472,9 @@ function drw_eol()
 	draw_sun()
 	d_plyr()
 	draw_fuel()
+	if e_state < 2 and perfect then
+	 lprint("perfect!",hcenter("perfect!"),20+sin(time()),9,1)
+	end
 	drw_eol_mask()
 	rectfill(0,0,128,8,1)
 	draw_fx()
@@ -1541,8 +1549,9 @@ function draw_sun(l)
 end
 
 function game_end()
-	if btnp(🅾️) then
+	if btnp(🅾️) and not btn_prsd then
 		init_circfade()
+		btn_prsd = true
 	end
 	end_tmr=min(end_tmr+0.01,1)
 	if fade_dir == 1 then
