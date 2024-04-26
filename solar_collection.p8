@@ -19,7 +19,7 @@ function _init()
 	t_blue=0--tank blue
 	points=0--points
 	
-	
+	p_x,p_y=64,100
 	debug={""}
 	effects={}
 	--two flame effects
@@ -159,6 +159,20 @@ function _draw()
 	end
 end
 
+function clear_score()
+	mult,mult_up=1,0
+	temp_points=0
+	fruit_chain=0
+	fuel=fuel_mx--red tank
+	fuel_drain=0.2
+	b_points=0--blue points
+	b_amnt=0--#blue in wave
+	t_blue=0--tank blue
+	points=0--points
+	fruits={}
+	fruitlet={}
+end
+
 function init_menu()
 	level=1
 	wave=1
@@ -168,10 +182,7 @@ function init_menu()
 	in_menu=true
 	sun_off=-140
 	perfect=true
-	p_x,p_y=64,100
-	mult,mult_up=1,0
-	temp_points=0
-	fruit_chain=0
+	clear_score()
 	gen_tmr=0
 	init_fruitlet()
 	m={"help","main game","fuel rush","customize","high scores"}
@@ -363,11 +374,10 @@ end
 
 function init_start_game()
 	--🅾️ btn press timer
+	clear_score()
 	sg_tmr=0
 	s_stat="launch"
 	s_clr=2
-	fuel=fuel_mx--red tank
-	fuel_drain=0.2
 	fuel_tmr=0
 	_upd=upd_start_game
 	init_circfade()
@@ -573,13 +583,7 @@ end
 -->8
 --level
 function init_level()
-	mult,mult_up=1,0
-	b_points=0--blue points
-	b_amnt=0--#blue in wave
-	t_blue=0--tank blue
-	points=0--points
-	temp_points=0
-	fruit_chain=0
+	
 	gen_tmr=0
 	if not endless then
 		init_fruit_wave()
