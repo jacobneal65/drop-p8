@@ -169,7 +169,8 @@ function clear_score()
 	b_amnt=0--#blue in wave
 	t_blue=0--tank blue
 	points=0--points
-	level,wave=1,4
+	level,wave=1,1
+	perfect=true
 	dots={}
 	fruits={}
 	fruitlet={}
