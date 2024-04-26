@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 --solar collection
---by olivander65
+--by olivander
 function _init()
 	v="1"
 	t=0
