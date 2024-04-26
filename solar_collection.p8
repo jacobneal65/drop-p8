@@ -549,8 +549,6 @@ function cust_draw()
 end
 
 function score_draw()
-	
-
 	local txt={"story high score:"..high_score,"fuel rush score:"..endless_score}
 	local txt2={"story high score:","fuel rush score:","medal 1:perfect story run","medal 2:over 900 in fuel rush"}
 	print(txt[1],8,6,9)
